@@ -4,6 +4,8 @@
 
 **Authority:** Subordinate to [`docs/source/SATE_Group_A_System_Documentation.docx`](../../source/SATE_Group_A_System_Documentation.docx). Cross-check Group B **§1.3** only for symmetric isolation rules.
 
+**Related design:** [01-system-overview-independence.md](./01-system-overview-independence.md) (§1.3–2.6), [architecture-components.md](./architecture-components.md) (components), [06-broker-exness-mt5.md](./06-broker-exness-mt5.md) (Windows/MT5), [08-halts-kill-checkin.md](./08-halts-kill-checkin.md) (partial ALL halt), [telegram-interface.md](./telegram-interface.md) (notifier-bot placement).
+
 ---
 
 ## 1. Design intent
@@ -23,7 +25,7 @@ This strategy satisfies A-IND-04 by deploying Group A end-to-end first, with sha
 
 ### 2.1 Profile A-only (initial)
 
-Used from Phase 1 through LIVE-L1 until Group B is intentionally deployed.
+Used from **implementation Phase 2** through **Phase 27** (LIVE-L1 steady state) until Group B is intentionally deployed.
 
 | Concern | Choice | Source reference |
 |---------|--------|------------------|
@@ -44,7 +46,7 @@ When Group B is added, **no Group A deployment change** may introduce cross-grou
 
 ## 3. Physical and network topology
 
-Group A **§2.3** and **§7.3** require a **Windows host** near Exness server region (latency for fill quality). Appendix D ties hosting verification to **Phase 3** (implementation phases doc).
+Group A **§2.3** and **§7.3** require a **Windows host** near Exness server region (latency for fill quality). Hosting is built in **implementation Phases 11 and 19** ([implementation-phases.md](./implementation-phases.md); **A-DEC-07**).
 
 ```
                     +------------------ Private overlay (WireGuard / Tailscale) ------------------+
@@ -143,17 +145,17 @@ Runbooks **Appendix C** apply to Group A processes only; B-specific steps are ou
 
 ## 7. Rollout sequence (deployment actions)
 
-Aligned with Group A **§18.1 P0 build sequence** and Phase 3 hosting (**Appendix D**):
+Aligned with Group A **§18.1 P0 build sequence** and [implementation-phases.md](./implementation-phases.md) (**Phases 1–27**):
 
-1. Provision **private overlay** and secrets vault (no credentials in git).
-2. Deploy fact log + A database + crypto tooling (Phase 1).
-3. Deploy control-api + monitoring (Phase 3) — kernel not yet LIVE.
-4. Provision **Windows VPS** (A-DEC-07); install MT5 portable demo; connect bridge in SIM.
-5. Deploy signed **KERNEL-A** artifact; verify Constitution **A-001** SIM profile (**Appendix A** example structure).
-6. Deploy notifier-bot with allowlist; wire to control-api (**TG-PO-01**, **TG-PO-09**).
-7. Run **SIM** trading loop until **§4.5 SIM-adequacy** evidence complete (Phase 5).
-8. Complete **§19** gates + **§4.3** preflight before arming LIVE-L1 (Phase 6–7).
-9. Arm LIVE: web passkey → arming delay → Telegram OTP in web (**§4.3**, **OI-TG-01**) → safe window → ramp **0.25×**, **EUR/USD only** (**§5.1**, Appendix A `[universe] LIVE-L1`).
+1. Provision **private overlay** and secrets vault (no credentials in git) — **Phase 1**.
+2. Deploy identity store, fact log, capital/treasury, RCB, Constitution (**Phases 2–7**).
+3. Deploy signed kernel pipeline, KERNEL-A, vault, MT5 bridge, OMS, recon, execution guards (**Phases 8–14**).
+4. Deploy halt/kill, check-in, **control-api**, **notifier-bot**, monitoring/DR, Windows host (**Phases 15–19**).
+5. Run strategy + cognitive SIM loop; adequacy engine + scenario harness (**Phases 20–22**).
+6. Accumulate **≥6 months** SIM evidence (**Phase 23**).
+7. Complete broker/compliance package and **§19** verification suite (**Phases 24–25**).
+8. Arm LIVE: web passkey → arming delay → Telegram code in web (**§4.3**, **OI-TG-01**) → safe window — **Phase 26**.
+9. Ramp **0.25×**, shadow twin, steady LIVE-L1 (**Phase 27**); **EUR/USD only** (**§5.1**, Appendix A `[universe] LIVE-L1`).
 
 ---
 
@@ -174,7 +176,7 @@ Aligned with Group A **§18.1 P0 build sequence** and Phase 3 hosting (**Appendi
 
 - Tag costs **A**, **B**, or **GLOBAL** (**A-TRE-01**). In A-only, most infra is **GLOBAL** until B exists; allocate per **A-DEC-05** (starting: pro-rata by RCB — with B RCB = 0, document explicit interim rule in decision log).
 - Owner bridge funding **$60/month combined** (**A-TRE-06**) — record as owner-paid; does not change RCB (**A-DEC-06** open).
-- Withdrawals: **manual** Exness portal (**§7.3**, **§10.5**, Appendix D Phase 5).
+- Withdrawals: **manual** Exness portal (**§7.3**, **§10.5**; verify by **implementation Phase 23/27**).
 
 ---
 
@@ -188,4 +190,4 @@ Independent deployment is achieved when:
 4. **Partial halt** displays correctly with B not deployed (**TG-T-08**).
 5. Group A **SIM** runs continuously with reconciliation (**A-SIM-02** path) without any Group B binary running.
 
-After this, Phase 5 accumulates **SIM-adequacy** calendar evidence; Phase 6–7 address **LIVE eligibility** (**§19** gate table).
+After this, **Phase 23** accumulates **SIM-adequacy** calendar evidence; **Phases 24–27** address compliance, **§19** LIVE eligibility, entry, and steady LIVE-L1.

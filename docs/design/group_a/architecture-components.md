@@ -167,3 +167,28 @@ Until Group B exists:
 - No shared “total equity” field on any kernel or sizing API (**INV-03**).
 
 When Group B is added, same APIs gain a second kernel registration without changing A contracts (**A-IND-03**).
+
+---
+
+## 11. Deep-dive design documents
+
+Subsystem behaviour, workflows, and requirement-level detail live in dedicated files (avoid duplicating full spec text here):
+
+| Topic | Document |
+|-------|----------|
+| Independence, principles, shared services | [01-system-overview-independence.md](./01-system-overview-independence.md) |
+| Capital, RCB, treasury | [02-capital-rcb-treasury.md](./02-capital-rcb-treasury.md) |
+| Modes, ladder, SIM gates | [03-modes-ladder-sim-gates.md](./03-modes-ladder-sim-gates.md) |
+| Strategy / quant | [04-strategy-quant-engine.md](./04-strategy-quant-engine.md) |
+| Kernel, OMS, recon | [05-kernel-oms-reconciliation.md](./05-kernel-oms-reconciliation.md) |
+| Exness MT5 | [06-broker-exness-mt5.md](./06-broker-exness-mt5.md) |
+| Constitution / deploy | [07-constitution-crypto-deployment.md](./07-constitution-crypto-deployment.md) |
+| Halts / kill / check-in | [08-halts-kill-checkin.md](./08-halts-kill-checkin.md) |
+| Cognitive plane | [09-cognitive-plane.md](./09-cognitive-plane.md) |
+| Fact log / journal | [10-data-audit-fact-log.md](./10-data-audit-fact-log.md) |
+| Web / control-api | [11-web-control-api.md](./11-web-control-api.md) |
+| Telegram | [telegram-interface.md](./telegram-interface.md) |
+| Monitoring / DR | [12-monitoring-backup-continuity.md](./12-monitoring-backup-continuity.md) |
+| Scenarios / runbooks | [13-scenarios-runbooks.md](./13-scenarios-runbooks.md) |
+| Verification / LIVE gates | [14-verification-risks-live-gates.md](./14-verification-risks-live-gates.md) |
+| Schemas / Constitution example | [15-persistent-schemas-constitution.md](./15-persistent-schemas-constitution.md) |

@@ -82,7 +82,7 @@ Going **LIVE** is allowed only when **that group alone** passes gates: capital/R
 | [`docs/source/SATE_Group_A_System_Documentation.docx`](docs/source/SATE_Group_A_System_Documentation.docx) | Group A requirements, scenarios, verification, backlog |
 | [`docs/source/SATE_Group_B_System_Documentation.docx`](docs/source/SATE_Group_B_System_Documentation.docx) | Group B (future track; independence rules apply now) |
 | [`docs/source/SATE_Telegram_Interface_Specification.docx`](docs/source/SATE_Telegram_Interface_Specification.docx) | Shared Telegram bot behaviour and tests |
-| [`docs/design/group_a/`](docs/design/group_a/) | Phased implementation design, architecture, traceability, decision log |
+| [`docs/design/group_a/`](docs/design/group_a/) | Full Group A design spec (15 subsystem docs + Telegram + phases + traceability); start at [`group_a/README.md`](docs/design/group_a/README.md) |
 
 Open **implementation blockers** (owner decisions required before engineering may assume values) are tracked in [`docs/design/group_a/decision-log.md`](docs/design/group_a/decision-log.md) (Group A §20, Telegram open items).
 

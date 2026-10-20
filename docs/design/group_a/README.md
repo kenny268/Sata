@@ -1,74 +1,139 @@
 # Group A — Implementation Design Package
 
-For **what SATE is as a whole** (both groups, shared control plane, LIVE gates, and repo layout), see the project [README.md](../../../README.md).
+For **what SATE is as a whole**, see the project [README.md](../../../README.md).
 
-This folder holds **engineering design** for building and operating **Group A** through to **LIVE eligibility** and sustained **LIVE-L1** operation. It is derived from and must stay consistent with the authoritative requirements in `docs/source/`.
+This folder is the **engineering design specification** for Group A: derived from and constrained by the authoritative Word sources in [`docs/source/`](../../source/). It is intended to be read **without opening the source documents** for day-to-day implementation, while the sources remain normative for conflicts.
 
-## Authoritative sources
+**Sources (normative):**
 
-| Document | Path | Role |
-|----------|------|------|
-| Group A System Documentation | [`docs/source/SATE_Group_A_System_Documentation.docx`](../../source/SATE_Group_A_System_Documentation.docx) | Requirements, behaviour, scenarios, verification, backlog (§1–20, Appendices A–D) |
-| Telegram Interface Specification | [`docs/source/SATE_Telegram_Interface_Specification.docx`](../../source/SATE_Telegram_Interface_Specification.docx) | Shared `notifier-bot`, TG-/TG-S-/TG-T-/TG-PO- families (§0–18) |
-| Group B System Documentation | [`docs/source/SATE_Group_B_System_Documentation.docx`](../../source/SATE_Group_B_System_Documentation.docx) | **Reference only** for independence contract (§1.3) and ALL-scope halt (§9.3); Group B is not in scope for initial delivery |
+| Document | Path |
+|----------|------|
+| Group A System Documentation | [`SATE_Group_A_System_Documentation.docx`](../../source/SATE_Group_A_System_Documentation.docx) |
+| Telegram Interface Specification | [`SATE_Telegram_Interface_Specification.docx`](../../source/SATE_Telegram_Interface_Specification.docx) |
+| Group B (reference only) | Independence §1.3, ALL-scope halt §9.3 |
 
-**Document control (from source):** Status — requirements and implementation definition, for review; Date — 16 October 2026; Owner — Kennedy (sole operator and user); Classification — private, no credentials in repo.
+**Document control (from source):** 16 October 2026; requirements/implementation definition for review; owner Kennedy; private — no credentials in repo.
 
-## Design documents in this folder
+---
 
-| File | Purpose |
-|------|---------|
-| [independent-deployment-strategy.md](./independent-deployment-strategy.md) | How Group A is deployed and operated **without depending on Group B** for trading, sizing, or LIVE gates |
-| [implementation-phases.md](./implementation-phases.md) | End-to-end **implementation phases** from foundation through LIVE-L1, with deliverables, gates, tests, and traceability |
-| [traceability-matrix.md](./traceability-matrix.md) | Requirement IDs, backlog items, scenarios, and verification classes mapped to phases |
-| [architecture-components.md](./architecture-components.md) | Logical components, data flows, and authority boundaries (maps to Group A §2.6, §6.1, §13) |
+## How to use this package
+
+1. Start with [01-system-overview-independence.md](./01-system-overview-independence.md) and [architecture-components.md](./architecture-components.md).
+2. Implement by subsystem using the numbered **`01`–`15`** design files below.
+3. Track phases via [implementation-phases.md](./implementation-phases.md) and [traceability-matrix.md](./traceability-matrix.md).
+4. Record owner decisions in [decision-log.md](./decision-log.md); ambiguities in [SOURCE-AMBIGUITIES.md](./SOURCE-AMBIGUITIES.md).
+5. Verify coverage with [COVERAGE-CHECKLIST.md](./COVERAGE-CHECKLIST.md).
+
+---
+
+## Design document index
+
+### Core architecture and deployment
+
+| Document | Content (maps to GA §) |
+|----------|-------------------------|
+| [01-system-overview-independence.md](./01-system-overview-independence.md) | §1–2: purpose, independence, principles, actors, shared services |
+| [architecture-components.md](./architecture-components.md) | Component catalogue, control path, kernel checks, interfaces summary |
+| [independent-deployment-strategy.md](./independent-deployment-strategy.md) | A-only topology, hosts, network, rollout |
+
+### Subsystems (detailed design)
+
+| Document | Content (maps to GA §) |
+|----------|-------------------------|
+| [02-capital-rcb-treasury.md](./02-capital-rcb-treasury.md) | §3, §10: capital model, RCB, fees, treasury, reimbursement |
+| [03-modes-ladder-sim-gates.md](./03-modes-ladder-sim-gates.md) | §4: modes, SIM→LIVE, ladder, SIM-adequacy, floor rules |
+| [04-strategy-quant-engine.md](./04-strategy-quant-engine.md) | §5: universe, signals, sizing, costs, promotion |
+| [05-kernel-oms-reconciliation.md](./05-kernel-oms-reconciliation.md) | §6: kernel, OMS, reconciliation, failures |
+| [06-broker-exness-mt5.md](./06-broker-exness-mt5.md) | §7: adapter contract, MT5 bridge, verification |
+| [07-constitution-crypto-deployment.md](./07-constitution-crypto-deployment.md) | §8: Constitution lifecycle, build/deploy pipeline |
+| [08-halts-kill-checkin.md](./08-halts-kill-checkin.md) | §9: halt ladder, kill, global halt, check-in |
+| [09-cognitive-plane.md](./09-cognitive-plane.md) | §11: AdvisorySignal, BL mapping, gates |
+| [10-data-audit-fact-log.md](./10-data-audit-fact-log.md) | §12: fact log, journal, retention |
+| [11-web-control-api.md](./11-web-control-api.md) | §13.1–13.3: API, SPA pages, LIVE arming |
+| [telegram-interface.md](./telegram-interface.md) | Telegram spec §0–18 + GA §13.4 (**A-TG-***) |
+| [12-monitoring-backup-continuity.md](./12-monitoring-backup-continuity.md) | §14: alerts, backup, DR drills |
+| [13-scenarios-runbooks.md](./13-scenarios-runbooks.md) | §15 + Appendix C: all scenario IDs + runbooks |
+| [14-verification-risks-live-gates.md](./14-verification-risks-live-gates.md) | §16–19, §17–18 backlog: tests, risks, LIVE gates |
+| [15-persistent-schemas-constitution.md](./15-persistent-schemas-constitution.md) | Appendix A–B: entities, Intent/Verdict, Constitution example |
+
+### Planning and traceability
+
+| Document | Content |
+|----------|---------|
+| [implementation-phases.md](./implementation-phases.md) | **27** build-complete phases, §18.1 mapping, backlog matrix |
+| [traceability-matrix.md](./traceability-matrix.md) | Requirement/backlog/scenario → phase and design doc |
+| [requirements-index.md](./requirements-index.md) | All **132** `A-*` IDs → primary design doc |
+| [decision-log.md](./decision-log.md) | A-DEC-*, OI-TG-* status |
+| [COVERAGE-CHECKLIST.md](./COVERAGE-CHECKLIST.md) | Source section → design file coverage |
+| [SOURCE-AMBIGUITIES.md](./SOURCE-AMBIGUITIES.md) | Gaps, undefined parameters, contradictions |
+
+---
 
 ## Phase map (summary)
 
-Phases are **capability and evidence gates**, not permission to go LIVE. LIVE remains a **constitution of gates** (Group A §19), not a feature flag.
+**27 implementation phases** (1–27): each phase exits only when its scope is **built, integrated, verified, and documented**—see [implementation-phases.md](./implementation-phases.md). Phases are **capability and evidence gates**, not permission to go LIVE (**§19**).
 
 ```mermaid
-flowchart LR
-  P0[Phase 0 Governance]
-  P1[Phase 1 Platform core]
-  P2[Phase 2 Kernel and MT5]
-  P3[Phase 3 Control plane and host]
-  P4[Phase 4 Strategy SIM]
-  P5[Phase 5 SIM evidence and gates]
-  P6[Phase 6 LIVE readiness]
-  P7[Phase 7 LIVE-L1 and ladder]
-
-  P0 --> P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
+flowchart TB
+  subgraph A["A: Foundation 1–3"]
+    P1[1 Program]
+    P2[2 Identity]
+    P3[3 Fact log]
+  end
+  subgraph B["B: Capital 4–7"]
+    P4[4 Ledger]
+    P5[5 Treasury]
+    P6[6 RCB]
+    P7[7 Constitution]
+  end
+  subgraph C["C: Trading core 8–14"]
+    P8[8 Release]
+    P9[9 Kernel]
+    P10[10 Vault]
+    P11[11 MT5]
+    P12[12 OMS]
+    P13[13 Recon]
+    P14[14 Guards]
+  end
+  subgraph D["D: Control 15–19"]
+    P15[15 Halt]
+    P16[16 Check-in]
+    P17[17 Web]
+    P18[18 Telegram]
+    P19[19 Ops infra]
+  end
+  subgraph E["E: SIM software 20–22"]
+    P20[20 Strategy]
+    P21[21 Cognitive]
+    P22[22 Adequacy]
+  end
+  subgraph F["F: SIM calendar 23"]
+    P23[23 6mo evidence]
+  end
+  subgraph G["G: LIVE gates 24–25"]
+    P24[24 Broker]
+    P25[25 DoD]
+  end
+  subgraph H["H: LIVE-L1 26–27"]
+    P26[26 Entry]
+    P27[27 Steady]
+  end
+  A --> B --> C --> D --> E --> F --> G --> H
 ```
 
-| Phase | Name | Primary source sections | Exit criterion (short) |
-|-------|------|-------------------------|-------------------------|
-| 0 | Governance and traceability | §1.4, §18 step 1, §20 | Requirement IDs, decision log, architecture signed off |
-| 1 | Platform core (P0 foundation) | §3, §12, §8 (partial), A-P0-01–07 | Fact log, capital ledger, RCB, Constitution crypto |
-| 2 | Kernel, OMS, Exness MT5 | §6, §7, A-P0-08–13 | Every intent → verdict → broker; reconciliation |
-| 3 | Halt/kill, web/Telegram, Windows host | §9, §13, §14, Telegram spec | Reduce-only control; monitoring; A-DEC-07 resolved |
-| 4 | Strategy and cognitive (SIM) | §5, §11 | Deterministic pipeline + advisory zero default |
-| 5 | SIM operations and adequacy | §4.5, A-P1-01, §15 | Six-month evidence path running; gate engine |
-| 6 | LIVE readiness | §4.3–4.4, §19, A-P1-06, Appendix D | Preflight, red-team, broker/tax verification |
-| 7 | LIVE-L1 entry and operation | §4.1, §4.5 ladder, A-P1-02–03 | Ramped LIVE; shadow twin; L2/L3 blocked on A-DEC-02 |
+Macro **A–H** ↔ phases **1–27**: full breakdown in [implementation-phases.md](./implementation-phases.md).
 
-## Independence (non-negotiable)
-
-From Group A **§1.3** and **§3** (capital hierarchy callout):
-
-- Group A and Group B are separate economic and execution domains.
-- Reporting may aggregate; **control logic may not**.
-- Combined cash/equity is **REPORTING_ONLY** — it must not enter sizing, RCB, LIVE eligibility, or risk limits (**A-IND-01–04**, **INV-02**, **INV-03**).
-
-Initial delivery follows [independent-deployment-strategy.md](./independent-deployment-strategy.md): Group B may be **absent** as a trading system, but shared services must still **enforce scope A** and never infer Group B capital.
-
-## Open decisions (implementation blockers)
-
-Engineering must not silently resolve items listed in Group A **§20**. Track status in [decision-log.md](./decision-log.md). Blockers include **A-DEC-01** (minimum lot vs per-trade cap at floor), **A-DEC-02** (L2/L3 rungs), **A-DEC-03** (SIM return hurdle), **A-DEC-07** (Windows hosting), **A-DEC-08** (emergency relay), **A-DEC-09** (RPO/RTO), **A-DEC-10** (broker/tax).
+---
 
 ## Conventions
 
-- Requirements in source use **shall** and IDs **`A-AREA-nn`**.
-- Telegram requirements use **`TG-nn`**, scenarios **`TG-S-nn`**, tests **`TG-T-nn`**, backlog **`TG-PO-nn`** (Telegram spec §11–15).
-- Backlog items **`A-P0-nn`**, **`A-P1-nn`**, **`A-P2-nn`** (Group A §18).
-- Scenarios **`TS-nn`**, **`HL-nn`**, **`OC-nn`**, **`AM-nn`**, **`CT-nn`**, **`OP-nn`**, **`BF-nn`**, **`MP-nn`** (Group A §15).
+- Requirements: **`A-AREA-nn`** (Group A), **`TG-nn`**, **`TG-S-nn`**, **`TG-T-nn`**, **`TG-PO-nn`**, **`SEC-nn`** (Telegram).
+- Scenarios: **TS-**, **HL-**, **OC-**, **AM-**, **CT-**, **OP-**, **BF-**, **MP-** (§15).
+- Backlog: **A-P0/P1/P2-nn** (§18).
+- **Shall** in source = mandatory; design uses same IDs for traceability.
+
+---
+
+## Independence (non-negotiable)
+
+Group A and Group B are separate economic domains (**§1.3**, **§3**). Combined figures are **reporting-only** (**INV-03**). Initial delivery: [independent-deployment-strategy.md](./independent-deployment-strategy.md).
