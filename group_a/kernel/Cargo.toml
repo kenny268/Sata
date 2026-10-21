@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+    "credentials",
+    "verdict",
+    "oms",
+    "reconcile",
+    "constitution",
+    "kernel-a",
+]

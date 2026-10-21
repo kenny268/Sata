@@ -1,0 +1,12 @@
+[package]
+name = "kernel-a"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+sate-a-constitution = { path = "../constitution" }
+sate-a-credentials = { path = "../credentials" }
+sate-a-oms = { path = "../oms" }
+sate-a-reconcile = { path = "../reconcile" }
+sate-a-verdict = { path = "../verdict" }
