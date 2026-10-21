@@ -212,7 +212,7 @@ Design documents remain under [`docs/design/group_a/`](docs/design/group_a/) (an
 | Group A and Telegram sources | In [`docs/source/`](docs/source/) |
 | Group A design (subsystems, Telegram, 27 phases, traceability, **repo layout**) | In [`docs/design/group_a/`](docs/design/group_a/) |
 | Group B design package | Not started |
-| Application folders `group_a/`, `group_b/`, `shared/` | **Phase 1 scaffold** in place (stubs, no broker) |
+| Application folders `group_a/`, `group_b/`, `shared/` | **Phase 2** identity registry on the Phase 1 scaffold |
 | CI | Path-filtered workflows under [`.github/workflows/`](.github/workflows/) |
 
-**Phase 1** is the current engineering baseline: layout, scope gate, kernel stub, and invariant tests. Trading behaviour starts at Phase 2. Open decisions stay in [decision-log.md](docs/design/group_a/decision-log.md). Layout decision: [ADR-0001](docs/design/group_a/adr/ADR-0001-repo-layout-and-independent-deploy.md).
+**Phase 2** is the current engineering baseline: the Group A identity registry and isolated store. Fact-log chaining starts at Phase 3. Open decisions stay in [decision-log.md](docs/design/group_a/decision-log.md). Layout decision: [ADR-0001](docs/design/group_a/adr/ADR-0001-repo-layout-and-independent-deploy.md).
