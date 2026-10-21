@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/account-profile.schema.json",
+  "title": "AccountProfile",
+  "description": "Wire contract. The Group A store accepts group_id A only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile_id", "group_id", "broker_id", "environment", "account_mode", "account_login", "server"],
+  "properties": {
+    "profile_id": { "enum": ["A-SIM", "A-LIVE"] },
+    "group_id": { "enum": ["A"] },
+    "broker_id": { "type": "string", "minLength": 1 },
+    "environment": { "enum": ["SIM", "LIVE"] },
+    "account_mode": { "enum": ["SIM", "LIVE"] },
+    "account_login": { "type": "string", "minLength": 1 },
+    "server": { "type": "string", "minLength": 1 }
+  }
+}
