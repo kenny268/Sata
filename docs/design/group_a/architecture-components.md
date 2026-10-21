@@ -4,6 +4,8 @@ Maps the **logical architecture** for implementation to Group A system documenta
 
 **Primary references:** Group A §2 (overview), §2.6 (shared services), §6.1 (control path), §7 (broker), §8 (Constitution/deploy), §12 (fact log), §13 (interfaces).
 
+**Repository mapping:** Logical components below map to paths in [repository-layout.md](./repository-layout.md) (`group_a/`, `group_b/`, `shared/`).
+
 ---
 
 ## 1. Component catalogue
@@ -32,6 +34,8 @@ Maps the **logical architecture** for implementation to Group A system documenta
 | **Monitoring / alerting** | Service | Metrics, CRITICAL path | None | §14.1 |
 | **Backup agent** | Job | Encrypted off-host backup | Backup encryption keys | §14.2 |
 | **Signed CLI (kill)** | Tool | Out-of-band K1–K3 to kernel local channel | Ed25519 kill key material | §9.2 |
+
+**Code location (summary):** KERNEL-A and OMS/recon → `group_a/kernel/`; strategy/cognitive → `group_a/strategy/`, `group_a/cognitive/`; MT5 → `group_a/broker/`; fact log, capital, RCB, treasury, halt, control-api, web, bot, monitoring → `shared/*` (scope-aware). KERNEL-B → `group_b/kernel/` when deployed. Full table: [repository-layout.md](./repository-layout.md) §3.
 
 ---
 
@@ -176,6 +180,7 @@ Subsystem behaviour, workflows, and requirement-level detail live in dedicated f
 
 | Topic | Document |
 |-------|----------|
+| Repository layout, CI/CD, SoC | [repository-layout.md](./repository-layout.md) |
 | Independence, principles, shared services | [01-system-overview-independence.md](./01-system-overview-independence.md) |
 | Capital, RCB, treasury | [02-capital-rcb-treasury.md](./02-capital-rcb-treasury.md) |
 | Modes, ladder, SIM gates | [03-modes-ladder-sim-gates.md](./03-modes-ladder-sim-gates.md) |

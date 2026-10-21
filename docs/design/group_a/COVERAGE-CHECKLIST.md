@@ -32,6 +32,7 @@ Maps **Group A System Documentation** (§1–20, Appendices A–D) and **Telegra
 | GA Appendix D Assumptions | [14-verification-risks-live-gates.md](./14-verification-risks-live-gates.md), [decision-log.md](./decision-log.md) | Partial |
 | TG §0–18 Full Telegram spec | [telegram-interface.md](./telegram-interface.md) | Covered |
 | Deployment (A-only) | [independent-deployment-strategy.md](./independent-deployment-strategy.md) | Covered |
+| Repository layout, SoC, CI path filters | [repository-layout.md](./repository-layout.md) | Covered |
 
 ## Requirement ID inventory (132 `A-*` IDs in GA source)
 

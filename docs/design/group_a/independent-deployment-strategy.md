@@ -4,7 +4,7 @@
 
 **Authority:** Subordinate to [`docs/source/SATE_Group_A_System_Documentation.docx`](../../source/SATE_Group_A_System_Documentation.docx). Cross-check Group B **§1.3** only for symmetric isolation rules.
 
-**Related design:** [01-system-overview-independence.md](./01-system-overview-independence.md) (§1.3–2.6), [architecture-components.md](./architecture-components.md) (components), [06-broker-exness-mt5.md](./06-broker-exness-mt5.md) (Windows/MT5), [08-halts-kill-checkin.md](./08-halts-kill-checkin.md) (partial ALL halt), [telegram-interface.md](./telegram-interface.md) (notifier-bot placement).
+**Related design:** [repository-layout.md](./repository-layout.md) (source tree and deploy boundaries), [01-system-overview-independence.md](./01-system-overview-independence.md) (§1.3–2.6), [architecture-components.md](./architecture-components.md) (components), [06-broker-exness-mt5.md](./06-broker-exness-mt5.md) (Windows/MT5), [08-halts-kill-checkin.md](./08-halts-kill-checkin.md) (partial ALL halt), [telegram-interface.md](./telegram-interface.md) (notifier-bot placement).
 
 ---
 
@@ -83,8 +83,8 @@ Group A **§2.3** and **§7.3** require a **Windows host** near Exness server re
 
 | Host | Processes | Credentials | Source |
 |------|-----------|-------------|--------|
-| **Windows (A-exec)** | KERNEL-A, MT5 bridge, MT5 demo terminal, MT5 live terminal (separate portable installs), optional strategy runner | **Trade-capable keys only inside KERNEL-A** | A-KRN-02, A-MOD-05, §7.3 |
-| **Private network (A-control)** | fact log service, PostgreSQL/SQLite (A-scoped), RCB, treasury, control-api, monitoring, backups, notifier-bot | Bot token + **limited control token** only on bot; no broker trade keys | Telegram §0 princ. 6, §13.1 |
+| **Windows (A-exec)** | `group_a/kernel/`, `group_a/broker/mt5-bridge/`, MT5 terminals, optional `group_a/strategy/` | **Trade-capable keys only inside KERNEL-A** (`group_a/kernel/credentials/`) | A-KRN-02, A-MOD-05, §7.3 |
+| **Private network (A-control)** | `shared/fact-log/`, capital/RCB/treasury services, `shared/control-api/`, monitoring, backup, `shared/notifier-bot/` | Bot token + **limited control token** only on bot; no broker trade keys | Telegram §0 princ. 6, §13.1 |
 | **Owner client** | Browser (WebAuthn), Telegram app | Passkey; allowlisted Telegram user | §13.3, A-TG-03 |
 
 ### 3.2 Segregation rules

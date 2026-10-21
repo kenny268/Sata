@@ -72,8 +72,10 @@ None (program start).
 
 ### Build scope
 
-- Monorepo layout: kernel (Rust), control-api, web SPA, notifier-bot, MT5 bridge, shared schemas, infra-as-code for **A-only** topology ([independent-deployment-strategy.md](./independent-deployment-strategy.md)).
-- **CI/CD:** build, lint, unit test, SAST dependency scan, artifact versioning, immutable release tags.
+- Repository layout per [repository-layout.md](./repository-layout.md): **`group_a/`**, **`group_b/`** (placeholder), **`shared/`** only at repo root for cross-group services; separation of concerns (strategy vs kernel vs broker vs credentials).
+- Stub packages at mapped paths (kernel, strategy, mt5-bridge, shared schemas, control-api, web, notifier-bot, `group_a/infra/`).
+- **CI/CD:** path-filtered workflows **`deploy-group-a`**, **`deploy-group-b`**, **`deploy-shared`** — a Group B–only change must not redeploy Group A; build, lint, unit test, SAST, artifact versioning per workflow.
+- Infra-as-code for **A-only** runtime topology ([independent-deployment-strategy.md](./independent-deployment-strategy.md)).
 - **Requirements tooling:** [requirements-index.md](./requirements-index.md), [traceability-matrix.md](./traceability-matrix.md), [COVERAGE-CHECKLIST.md](./COVERAGE-CHECKLIST.md) wired to work tracking.
 - **Decision log** with **A-DEC-01–10**, **OI-TG-01–06** (**OPEN** until owner acts).
 - **Environment tiers:** dev, staging (SIM), pre-LIVE (staging with production-like controls), production (LIVE-capable but gated).
@@ -98,10 +100,11 @@ Enables all **A-P0-***; no §18 backlog item closed without downstream phase.
 - Every §1–20 section and Telegram §0–18 referenced in coverage checklist.
 - **A-DEC-***/**OI-TG-*** visible; zero silent defaults documented.
 - ADR: Group A independent deployment ratified.
+- Repo scaffold matches [repository-layout.md](./repository-layout.md) §1 and §6; path filters documented in `shared/ci/`.
 
 ### Design references
 
-[01-system-overview-independence.md](./01-system-overview-independence.md), [COVERAGE-CHECKLIST.md](./COVERAGE-CHECKLIST.md), [decision-log.md](./decision-log.md).
+[repository-layout.md](./repository-layout.md), [01-system-overview-independence.md](./01-system-overview-independence.md), [COVERAGE-CHECKLIST.md](./COVERAGE-CHECKLIST.md), [decision-log.md](./decision-log.md).
 
 ---
 

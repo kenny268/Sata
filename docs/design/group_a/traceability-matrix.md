@@ -20,6 +20,7 @@ Maps **requirement families**, **backlog items**, **operational scenarios**, and
 | [13-scenarios-runbooks.md](./13-scenarios-runbooks.md) | §15, Appendix C |
 | [14-verification-risks-live-gates.md](./14-verification-risks-live-gates.md) | §16–19, §17, INV-* |
 | [15-persistent-schemas-constitution.md](./15-persistent-schemas-constitution.md) | Appendix A–B |
+| [repository-layout.md](./repository-layout.md) | Repo tree, SoC, CI path filters (Phase 1) |
 
 **Legend:** **Phases 1–27** = implementation phases in [implementation-phases.md](./implementation-phases.md) (build-complete gates). Macro rollup **A–H** in that document maps to phase ranges.
 
