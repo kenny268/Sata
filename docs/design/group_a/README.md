@@ -18,7 +18,7 @@ This folder is the **engineering design specification** for Group A: derived fro
 
 ## How to use this package
 
-1. Start with [01-system-overview-independence.md](./01-system-overview-independence.md) and [architecture-components.md](./architecture-components.md).
+1. Start with [01-system-overview-independence.md](./01-system-overview-independence.md), [repository-layout.md](./repository-layout.md) (code tree + CI), and [architecture-components.md](./architecture-components.md).
 2. Implement by subsystem using the numbered **`01`–`15`** design files below.
 3. Track phases via [implementation-phases.md](./implementation-phases.md) and [traceability-matrix.md](./traceability-matrix.md).
 4. Record owner decisions in [decision-log.md](./decision-log.md); ambiguities in [SOURCE-AMBIGUITIES.md](./SOURCE-AMBIGUITIES.md).
@@ -34,7 +34,11 @@ This folder is the **engineering design specification** for Group A: derived fro
 |----------|-------------------------|
 | [01-system-overview-independence.md](./01-system-overview-independence.md) | §1–2: purpose, independence, principles, actors, shared services |
 | [architecture-components.md](./architecture-components.md) | Component catalogue, control path, kernel checks, interfaces summary |
+| [repository-layout.md](./repository-layout.md) | `group_a/` / `group_b/` / `shared/` tree, separation of concerns, path-scoped CI/CD |
 | [independent-deployment-strategy.md](./independent-deployment-strategy.md) | A-only topology, hosts, network, rollout |
+| [adr/ADR-0001-repo-layout-and-independent-deploy.md](./adr/ADR-0001-repo-layout-and-independent-deploy.md) | Accepted layout and path-scoped deploy |
+| [threat-model-v1.md](./threat-model-v1.md) | Phase 1 threat seed |
+| [secret-management.md](./secret-management.md) | Where secrets may exist at runtime |
 
 ### Subsystems (detailed design)
 
