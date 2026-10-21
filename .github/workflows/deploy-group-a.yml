@@ -1,0 +1,58 @@
+name: deploy-group-a
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "group_a/**"
+      - ".github/workflows/deploy-group-a.yml"
+  pull_request:
+    paths:
+      - "group_a/**"
+      - ".github/workflows/deploy-group-a.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Lint KERNEL-A
+        working-directory: group_a/kernel
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test KERNEL-A stub
+        working-directory: group_a/kernel
+        run: cargo test --workspace
+      - name: Dependency scan
+        working-directory: group_a/kernel
+        run: |
+          cargo generate-lockfile
+          cargo install cargo-audit --locked
+          cargo audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lint and test Python stubs
+        run: |
+          pip install ruff
+          ruff check group_a shared
+          PYTHONPATH=group_a/strategy python -m unittest discover -s group_a/strategy/tests -t group_a/strategy
+          python -c "import ast, pathlib; ast.parse(pathlib.Path('group_a/broker/mt5-bridge/sate_mt5_bridge/__init__.py').read_text())"
+      - name: Publish sha-named artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: group-a-${{ github.sha }}
+          path: group_a/infra/compose.yaml
+          if-no-files-found: error
+      - name: Immutable release tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "sate-ci"
+          git config user.email "ci@sate.local"
+          git tag "group-a-${GITHUB_SHA}"
+          git push origin "group-a-${GITHUB_SHA}"

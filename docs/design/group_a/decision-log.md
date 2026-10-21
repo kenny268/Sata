@@ -6,6 +6,8 @@ Track resolution of **IMPLEMENTATION BLOCKER — DECISION REQUIRED** items from 
 
 Ambiguities and potential contradictions (undefined **N**, BF-06 vs A-EXE-03, etc.): [SOURCE-AMBIGUITIES.md](./SOURCE-AMBIGUITIES.md).
 
+Repository layout and independent deploy (not a product-value decision): [ADR-0001](./adr/ADR-0001-repo-layout-and-independent-deploy.md). Rows below stay open until the owner records a choice. Work items for Phase 1 point at this log from [phase-1-tracker.json](../../../shared/ci/phase-1-tracker.json).
+
 | ID | Decision | Status | Owner choice | Date | Blocks |
 |----|----------|--------|--------------|------|--------|
 | A-DEC-01 | Per-trade risk cap vs minimum lot at $500 floor (ramp interaction) | **OPEN** | — | — | LIVE gate, A-P0-21 |

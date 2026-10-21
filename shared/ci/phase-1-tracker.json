@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "adr": "docs/design/group_a/adr/ADR-0001-repo-layout-and-independent-deploy.md",
+  "requirements_index": "docs/design/group_a/requirements-index.md",
+  "traceability_matrix": "docs/design/group_a/traceability-matrix.md",
+  "coverage_checklist": "docs/design/group_a/COVERAGE-CHECKLIST.md",
+  "decision_log": "docs/design/group_a/decision-log.md",
+  "items": [
+    {"id": "P1-LAYOUT", "status": "done", "evidence": "group_a/, group_b/, shared/"},
+    {"id": "P1-CI-PATHS", "status": "done", "evidence": ".github/workflows/deploy-group-a.yml"},
+    {"id": "P1-SCOPE-GATE", "status": "done", "evidence": "shared/control-api/sate_control/scope.py"},
+    {"id": "P1-DECISIONS-OPEN", "status": "done", "evidence": "docs/design/group_a/decision-log.md"}
+  ]
+}

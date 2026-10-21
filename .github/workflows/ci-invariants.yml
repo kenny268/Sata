@@ -1,0 +1,23 @@
+name: ci-invariants
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  invariants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lint
+        run: pip install ruff && ruff check shared group_a
+      - name: Repository invariants and scope gate
+        run: python -m unittest shared/ci/tests/test_repo_invariants.py shared/control-api/tests/test_scope.py group_a/strategy/tests/test_boundary.py
+        env:
+          PYTHONPATH: shared/control-api:group_a/strategy

@@ -1,0 +1,36 @@
+name: deploy-group-b
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "group_b/**"
+      - ".github/workflows/deploy-group-b.yml"
+  pull_request:
+    paths:
+      - "group_b/**"
+      - ".github/workflows/deploy-group-b.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm placeholder
+        run: test -f group_b/README.md
+      - name: Publish sha-named artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: group-b-${{ github.sha }}
+          path: group_b/README.md
+          if-no-files-found: error
+      - name: Immutable release tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "sate-ci"
+          git config user.email "ci@sate.local"
+          git tag "group-b-${GITHUB_SHA}"
+          git push origin "group-b-${GITHUB_SHA}"

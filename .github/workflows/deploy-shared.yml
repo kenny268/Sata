@@ -1,0 +1,42 @@
+name: deploy-shared
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "shared/**"
+      - ".github/workflows/deploy-shared.yml"
+  pull_request:
+    paths:
+      - "shared/**"
+      - ".github/workflows/deploy-shared.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lint and test shared Python
+        run: |
+          pip install ruff
+          ruff check shared group_a
+          PYTHONPATH=shared/control-api python -m unittest discover -s shared/control-api/tests -t shared/control-api
+      - name: Publish sha-named artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-${{ github.sha }}
+          path: shared/schemas
+          if-no-files-found: error
+      - name: Immutable release tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "sate-ci"
+          git config user.email "ci@sate.local"
+          git tag "shared-${GITHUB_SHA}"
+          git push origin "shared-${GITHUB_SHA}"
