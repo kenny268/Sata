@@ -30,6 +30,14 @@ services:
     networks: [a-control]
     read_only: true
     restart: "no"
+  identity:
+    image: alpine:3.20
+    command: ["echo", "identity registry scope=A"]
+    environment:
+      SATE_GROUP_SCOPE: A
+    networks: [a-control]
+    read_only: true
+    restart: "no"
 
 networks:
   a-control:
