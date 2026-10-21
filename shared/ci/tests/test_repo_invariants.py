@@ -101,6 +101,10 @@ class RepoInvariantTests(unittest.TestCase):
         self.assertNotIn("password", text.lower())
         self.assertNotIn("ports:", text)
         self.assertNotIn("group_b", text)
+        self.assertEqual(text.count("*group-a"), 5)
+        self.assertIn("SATE_GROUP_SCOPE: A", text)
+        self.assertIn("sate_identity.bootstrap", text)
+        self.assertIn("sate-a-identity", text)
 
     def test_group_a_workflow_lints_scans_and_versions(self) -> None:
         text = (ROOT / ".github" / "workflows" / "deploy-group-a.yml").read_text(encoding="utf-8")

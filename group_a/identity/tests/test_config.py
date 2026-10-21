@@ -33,6 +33,54 @@ class ConfiguredStoreTests(unittest.TestCase):
             self.assertEqual(reopened.current("A-SIM")["account_login"], "1001")
             self.assertEqual(reopened.scope, "A")
 
+    def test_fact_projection_cannot_mutate_another_group(self) -> None:
+        from sate_identity.errors import IsolationError
+        from sate_identity.registry import consume_fact_event
+
+        with tempfile.TemporaryDirectory() as tmp:
+            database = Path(tmp) / "staging.db"
+            registry = open_registry(database)
+            saved = consume_fact_event(
+                registry,
+                {
+                    "event_id": "e-1",
+                    "group_scope": "A",
+                    "occurred_at": "2026-10-21T00:00:00Z",
+                    "category": "RISK_PROJECTION",
+                    "payload": {
+                        "projection_id": "p-1",
+                        "broker_id": "exness",
+                        "account_id": "1001",
+                        "account_mode": "SIM",
+                        "environment": "SIM",
+                    },
+                },
+            )
+            self.assertIsNotNone(saved)
+            with self.assertRaises(IsolationError):
+                consume_fact_event(
+                    registry,
+                    {
+                        "event_id": "e-2",
+                        "group_scope": "B",
+                        "occurred_at": "2026-10-21T00:00:00Z",
+                        "category": "RISK_PROJECTION",
+                        "payload": {
+                            "projection_id": "p-2",
+                            "broker_id": "alpaca",
+                            "account_id": "1",
+                            "account_mode": "SIM",
+                            "environment": "SIM",
+                        },
+                    },
+                )
+            reopened = open_registry(database)
+            groups = {
+                row[0]
+                for row in reopened._conn.execute("SELECT group_id FROM risk_projections")
+            }
+            self.assertEqual(groups, {"A"})
+
 
 if __name__ == "__main__":
     unittest.main()

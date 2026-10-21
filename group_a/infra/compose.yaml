@@ -1,40 +1,55 @@
 # A-only control plane for local and CI checks.
 # KERNEL-A and the MT5 terminals are not defined here. They belong on the
 # Windows exec host, and that host choice is still A-DEC-07.
-# No broker credentials, ports, or volumes.
+# No broker credentials and no published ports.
+# The identity volume is the Group A database, not a shared store.
 
 name: sate-group-a
+
+x-group-a: &group-a
+  SATE_GROUP_SCOPE: A
 
 services:
   fact-log:
     image: alpine:3.20
     command: ["echo", "fact-log phase-1 placeholder"]
+    environment: *group-a
     networks: [a-control]
     read_only: true
     restart: "no"
   control-api:
     image: alpine:3.20
     command: ["echo", "control-api phase-1 placeholder"]
+    environment: *group-a
     networks: [a-control]
     read_only: true
     restart: "no"
   notifier-bot:
     image: alpine:3.20
     command: ["echo", "notifier-bot phase-1 placeholder"]
+    environment: *group-a
     networks: [a-control]
     read_only: true
     restart: "no"
   monitoring:
     image: alpine:3.20
     command: ["echo", "monitoring phase-1 placeholder"]
+    environment: *group-a
     networks: [a-control]
     read_only: true
     restart: "no"
   identity:
-    image: alpine:3.20
-    command: ["echo", "identity registry scope=A"]
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_identity.bootstrap"]
     environment:
-      SATE_GROUP_SCOPE: A
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_IDENTITY_DB: /data/staging.db
+    volumes:
+      - ../identity:/app:ro
+      - identity-data:/data
     networks: [a-control]
     read_only: true
     restart: "no"
@@ -43,3 +58,7 @@ networks:
   a-control:
     name: sate-a-control
     driver: bridge
+
+volumes:
+  identity-data:
+    name: sate-a-identity

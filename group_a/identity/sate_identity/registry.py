@@ -199,3 +199,23 @@ def open_configured(config_path: str | Path) -> IdentityRegistry:
     if not isinstance(database, str) or not database:
         raise IsolationError("configuration database path is required")
     return open_registry(database, scope=scope)
+
+
+def consume_fact_event(
+    registry: IdentityRegistry,
+    envelope: dict[str, object],
+) -> dict[str, str] | None:
+    """Project one future fact-log envelope. Hash chaining arrives in Phase 3."""
+    scope = envelope.get("group_scope")
+    if scope != DEFAULT_SCOPE:
+        raise IsolationError(f"fact event refuses group {scope!r}")
+    if envelope.get("category") != "RISK_PROJECTION":
+        return None
+    payload = envelope.get("payload")
+    if not isinstance(payload, dict):
+        raise IsolationError("RISK_PROJECTION payload is required")
+    if payload.get("group_id", DEFAULT_SCOPE) != scope:
+        raise IsolationError("payload group does not match the fact-log scope")
+    event = {str(key): value for key, value in payload.items()}
+    event["group_id"] = DEFAULT_SCOPE
+    return registry.project_risk(event)
