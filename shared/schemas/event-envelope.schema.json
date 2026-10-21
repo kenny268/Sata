@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/event-envelope.schema.json",
+  "title": "FactLogEventEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "group_scope", "occurred_at", "category"],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1 },
+    "group_scope": { "enum": ["A", "B", "GLOBAL"] },
+    "occurred_at": { "type": "string", "minLength": 1 },
+    "category": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" }
+  }
+}

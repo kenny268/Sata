@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/verdict.schema.json",
+  "title": "Verdict",
+  "description": "Phase 1 contract stub. No order is legal without a verdict (INV-01), enforced in the kernel in a later phase.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intent_id", "kernel_version", "constitution_version", "decision", "checks", "issued_at"],
+  "properties": {
+    "intent_id": { "type": "string", "minLength": 1 },
+    "kernel_version": { "type": "string", "minLength": 1 },
+    "constitution_version": { "type": "string", "minLength": 1 },
+    "decision": { "enum": ["Allow", "AllowWithSize", "Reject", "Throttle"] },
+    "approved_quantity": { "type": ["string", "null"] },
+    "reject_reason": { "type": ["string", "null"] },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "passed"],
+        "properties": {
+          "name": { "type": "string" },
+          "passed": { "type": "boolean" },
+          "value": { "type": ["string", "null"] },
+          "limit": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "halt_level": { "type": ["string", "null"] },
+    "kill_state": { "type": ["string", "null"] },
+    "latency_us": { "type": ["integer", "null"], "minimum": 0 },
+    "issued_at": { "type": "string", "minLength": 1 }
+  }
+}

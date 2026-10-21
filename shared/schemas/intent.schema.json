@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/intent.schema.json",
+  "title": "ExecutionIntent",
+  "description": "Phase 1 contract stub. Kernel re-validates in a later phase. group is A or B, never a combined scope.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intent_id", "trace_id", "group", "account_mode", "instrument", "side", "quantity", "order_type", "strategy_id", "created_at"],
+  "properties": {
+    "intent_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "group": { "enum": ["A", "B"] },
+    "account_mode": { "enum": ["SIM", "LIVE"] },
+    "instrument": { "type": "string", "minLength": 1 },
+    "side": { "enum": ["BUY", "SELL"] },
+    "quantity": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+    "order_type": { "enum": ["MARKET", "LIMIT"] },
+    "limit_price": { "type": ["string", "null"] },
+    "protective_stop": { "type": ["string", "null"] },
+    "take_profit": { "type": ["string", "null"] },
+    "slippage_budget": { "type": ["string", "null"] },
+    "strategy_id": { "type": "string", "minLength": 1 },
+    "signal_refs": { "type": "array", "items": { "type": "string" } },
+    "advisory_refs": { "type": "array", "items": { "type": "string" } },
+    "created_at": { "type": "string", "minLength": 1 }
+  }
+}
