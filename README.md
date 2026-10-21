@@ -104,6 +104,7 @@ Start at the project root (this file), then the Group A package index.
 | What the whole system is | This README |
 | Group A architecture and components | [`architecture-components.md`](docs/design/group_a/architecture-components.md) |
 | How Group A runs without Group B | [`independent-deployment-strategy.md`](docs/design/group_a/independent-deployment-strategy.md) |
+| Code tree (`group_a/`, `group_b/`, `shared/`) and CI path filters | [`repository-layout.md`](docs/design/group_a/repository-layout.md) |
 | A subsystem in depth | Numbered files `01`–`15` and [`telegram-interface.md`](docs/design/group_a/telegram-interface.md) — index in [`docs/design/group_a/README.md`](docs/design/group_a/README.md) |
 | What to build, in order | [`implementation-phases.md`](docs/design/group_a/implementation-phases.md) — **27** build-complete phases |
 | Which requirement lands where | [`traceability-matrix.md`](docs/design/group_a/traceability-matrix.md) and [`requirements-index.md`](docs/design/group_a/requirements-index.md) (132 `A-*` IDs) |
@@ -188,13 +189,30 @@ flowchart TB
 
 ---
 
+## Repository layout (application code)
+
+When implementation starts, code lives in **three roots** (not mixed at repo top):
+
+| Path | Role |
+|------|------|
+| [`group_a/`](docs/design/group_a/repository-layout.md) | KERNEL-A, strategy, cognitive, Exness MT5 — **no imports from `group_b/`** |
+| [`group_b/`](docs/design/group_a/repository-layout.md) | KERNEL-B, Alpaca (future) — **no imports from `group_a/`** |
+| [`shared/`](docs/design/group_a/repository-layout.md) | Fact log, capital/RCB/treasury (scoped), web, Telegram bot, halt coordinator — **no broker trade keys** |
+
+CI/CD uses **path filters**: a deploy that only changes `group_b/` must not rebuild or restart Group A. Full tree, separation-of-concern rules, and workflow names: [`docs/design/group_a/repository-layout.md`](docs/design/group_a/repository-layout.md).
+
+Design documents remain under [`docs/design/group_a/`](docs/design/group_a/) (and future `docs/design/group_b/`).
+
+---
+
 ## Repository status
 
 | Area | Status |
 |------|--------|
 | Group A and Telegram sources | In [`docs/source/`](docs/source/) |
-| Group A design (subsystems, Telegram, 27 phases, traceability) | In [`docs/design/group_a/`](docs/design/group_a/) |
+| Group A design (subsystems, Telegram, 27 phases, traceability, **repo layout**) | In [`docs/design/group_a/`](docs/design/group_a/) |
 | Group B design package | Not started |
-| Application code (kernel, control-api, web, bot, MT5 bridge) | Not started; follows the phase plan |
+| Application folders `group_a/`, `group_b/`, `shared/` | **Phase 1 scaffold** in place (stubs, no broker) |
+| CI | Path-filtered workflows under [`.github/workflows/`](.github/workflows/) |
 
-There is no application to build or run yet. The next engineering step is **Phase 1** in the implementation plan: program foundation, traceability in the work tracker, CI skeleton, and the decision log kept current.
+**Phase 1** is the current engineering baseline: layout, scope gate, kernel stub, and invariant tests. Trading behaviour starts at Phase 2. Open decisions stay in [decision-log.md](docs/design/group_a/decision-log.md). Layout decision: [ADR-0001](docs/design/group_a/adr/ADR-0001-repo-layout-and-independent-deploy.md).
