@@ -1,0 +1,37 @@
+# A-only control plane for local and CI checks.
+# KERNEL-A and the MT5 terminals are not defined here. They belong on the
+# Windows exec host, and that host choice is still A-DEC-07.
+# No broker credentials, ports, or volumes.
+
+name: sate-group-a
+
+services:
+  fact-log:
+    image: alpine:3.20
+    command: ["echo", "fact-log phase-1 placeholder"]
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  control-api:
+    image: alpine:3.20
+    command: ["echo", "control-api phase-1 placeholder"]
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  notifier-bot:
+    image: alpine:3.20
+    command: ["echo", "notifier-bot phase-1 placeholder"]
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  monitoring:
+    image: alpine:3.20
+    command: ["echo", "monitoring phase-1 placeholder"]
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+
+networks:
+  a-control:
+    name: sate-a-control
+    driver: bridge
