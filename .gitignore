@@ -1,0 +1,20 @@
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+
+# Rust
+target/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+dist/
+
+# OS / editor
+.DS_Store
