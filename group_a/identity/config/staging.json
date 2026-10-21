@@ -1,0 +1,5 @@
+{
+  "group_scope": "A",
+  "database": "group_a/identity/var/staging.db",
+  "profiles": ["A-SIM", "A-LIVE"]
+}

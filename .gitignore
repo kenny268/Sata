@@ -16,5 +16,5 @@ __pycache__/
 *.egg-info/
 dist/
 
-# OS / editor
-.DS_Store
+*.db
+group_a/identity/var/

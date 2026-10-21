@@ -1,0 +1,9 @@
+[project]
+name = "sate-identity-a"
+version = "0.2.0"
+description = "Group A account identity registry. Scope A only."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sate_identity*"]
