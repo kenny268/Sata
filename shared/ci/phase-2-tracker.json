@@ -1,0 +1,10 @@
+{
+  "phase": 2,
+  "requirements": ["A-IND-01", "A-IND-02", "A-IND-03", "A-MOD-02", "A-MOD-03", "INV-02", "INV-03"],
+  "backlog": ["A-P0-01", "A-P0-03"],
+  "evidence": [
+    "group_a/identity/sate_identity/registry.py",
+    "group_a/identity/config/staging.json",
+    "shared/schemas/account-profile.schema.json"
+  ]
+}

@@ -18,6 +18,6 @@ jobs:
       - name: Lint
         run: pip install ruff && ruff check shared group_a
       - name: Repository invariants and scope gate
-        run: python -m unittest shared/ci/tests/test_repo_invariants.py shared/control-api/tests/test_scope.py group_a/strategy/tests/test_boundary.py
+        run: python -m unittest shared/ci/tests/test_repo_invariants.py shared/control-api/tests/test_scope.py group_a/strategy/tests/test_boundary.py group_a/identity/tests/test_registry.py group_a/identity/tests/test_config.py
         env:
-          PYTHONPATH: shared/control-api:group_a/strategy
+          PYTHONPATH: shared/control-api:group_a/strategy:group_a/identity
