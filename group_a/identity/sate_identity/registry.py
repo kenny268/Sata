@@ -51,6 +51,11 @@ CREATE TABLE IF NOT EXISTS risk_projections (
     environment TEXT NOT NULL CHECK (environment IN ('SIM', 'LIVE')),
     CHECK (environment = account_mode)
 );
+
+CREATE TABLE IF NOT EXISTS projection_cursor (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    seq INTEGER NOT NULL
+);
 """
 
 
@@ -137,6 +142,29 @@ class IdentityRegistry:
         registered = Fingerprint(current["account_login"], current["server"])
         return registered.matches(observed)
 
+    def has_risk_projection(self, projection_id: str) -> bool:
+        row = self._conn.execute(
+            "SELECT 1 FROM risk_projections WHERE projection_id = ?",
+            (projection_id,),
+        ).fetchone()
+        return row is not None
+
+    def projection_cursor(self) -> int:
+        row = self._conn.execute("SELECT seq FROM projection_cursor WHERE id = 1").fetchone()
+        if row is None:
+            return 0
+        return int(row[0])
+
+    def store_projection_cursor(self, seq: int) -> None:
+        self._conn.execute(
+            """
+            INSERT INTO projection_cursor (id, seq) VALUES (1, ?)
+            ON CONFLICT(id) DO UPDATE SET seq = excluded.seq
+            """,
+            (seq,),
+        )
+        self._conn.commit()
+
     def project_risk(self, event: dict[str, object]) -> dict[str, str]:
         overlap = _FORBIDDEN_KEYS.intersection(event)
         if overlap:
@@ -205,15 +233,15 @@ def consume_fact_event(
     registry: IdentityRegistry,
     envelope: dict[str, object],
 ) -> dict[str, str] | None:
-    """Project one future fact-log envelope. Hash chaining arrives in Phase 3."""
+    """Project one fact-log envelope into the Group A risk store."""
     scope = envelope.get("group_scope")
     if scope != DEFAULT_SCOPE:
         raise IsolationError(f"fact event refuses group {scope!r}")
-    if envelope.get("category") != "RISK_PROJECTION":
+    if envelope.get("category") not in {"RISK_PROJECTION", "capital_state"}:
         return None
     payload = envelope.get("payload")
     if not isinstance(payload, dict):
-        raise IsolationError("RISK_PROJECTION payload is required")
+        raise IsolationError("capital payload is required")
     if payload.get("group_id", DEFAULT_SCOPE) != scope:
         raise IsolationError("payload group does not match the fact-log scope")
     event = {str(key): value for key, value in payload.items()}

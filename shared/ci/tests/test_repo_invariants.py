@@ -105,6 +105,11 @@ class RepoInvariantTests(unittest.TestCase):
         self.assertIn("SATE_GROUP_SCOPE: A", text)
         self.assertIn("sate_identity.bootstrap", text)
         self.assertIn("sate-a-identity", text)
+        self.assertIn("sate_factlog.bootstrap", text)
+        self.assertIn("sate-a-factlog", text)
+        self.assertIn("SATE_FACTLOG_DB", text)
+        self.assertIn("/factlog-data:ro", text)
+        self.assertIn("depends_on:", text)
 
     def test_group_a_workflow_lints_scans_and_versions(self) -> None:
         text = (ROOT / ".github" / "workflows" / "deploy-group-a.yml").read_text(encoding="utf-8")

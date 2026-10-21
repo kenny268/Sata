@@ -4,11 +4,31 @@
   "title": "FactLogEventEnvelope",
   "type": "object",
   "additionalProperties": false,
-  "required": ["event_id", "group_scope", "occurred_at", "category"],
+  "required": [
+    "event_id",
+    "event_type",
+    "group_scope",
+    "occurred_at",
+    "recorded_at",
+    "correlation_id",
+    "source",
+    "payload_crc32",
+    "schema_version",
+    "previous_hash",
+    "category"
+  ],
   "properties": {
     "event_id": { "type": "string", "minLength": 1 },
+    "event_type": { "type": "string", "minLength": 1 },
     "group_scope": { "enum": ["A", "B", "GLOBAL"] },
     "occurred_at": { "type": "string", "minLength": 1 },
+    "recorded_at": { "type": "string", "minLength": 1 },
+    "correlation_id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "payload_crc32": { "type": "string", "minLength": 8 },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "previous_hash": { "type": "string", "minLength": 64 },
+    "provenance": { "type": "string" },
     "category": { "type": "string", "minLength": 1 },
     "payload": { "type": "object" }
   }

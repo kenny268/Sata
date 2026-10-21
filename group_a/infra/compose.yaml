@@ -11,9 +11,17 @@ x-group-a: &group-a
 
 services:
   fact-log:
-    image: alpine:3.20
-    command: ["echo", "fact-log phase-1 placeholder"]
-    environment: *group-a
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_factlog.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_FACTLOG_DB: /data/staging.db
+    volumes:
+      - ../../shared/fact-log:/app:ro
+      - factlog-data:/data
     networks: [a-control]
     read_only: true
     restart: "no"
@@ -44,12 +52,17 @@ services:
     command: ["python", "-m", "sate_identity.bootstrap"]
     environment:
       <<: *group-a
-      PYTHONPATH: /app
+      PYTHONPATH: /app:/factlog
       PYTHONDONTWRITEBYTECODE: "1"
       SATE_IDENTITY_DB: /data/staging.db
+      SATE_FACTLOG_DB: /factlog-data/staging.db
     volumes:
       - ../identity:/app:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/factlog-data:ro
       - identity-data:/data
+    depends_on:
+      - fact-log
     networks: [a-control]
     read_only: true
     restart: "no"
@@ -62,3 +75,5 @@ networks:
 volumes:
   identity-data:
     name: sate-a-identity
+  factlog-data:
+    name: sate-a-factlog

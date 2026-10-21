@@ -212,7 +212,7 @@ Design documents remain under [`docs/design/group_a/`](docs/design/group_a/) (an
 | Group A and Telegram sources | In [`docs/source/`](docs/source/) |
 | Group A design (subsystems, Telegram, 27 phases, traceability, **repo layout**) | In [`docs/design/group_a/`](docs/design/group_a/) |
 | Group B design package | Not started |
-| Application folders `group_a/`, `group_b/`, `shared/` | **Phase 2** identity registry on the Phase 1 scaffold |
+| Application folders `group_a/`, `group_b/`, `shared/` | **Phase 3** fact log, with the Phase 2 identity store as a projection |
 | CI | Path-filtered workflows under [`.github/workflows/`](.github/workflows/) |
 
-**Phase 2** is the current engineering baseline: the Group A identity registry and isolated store. Fact-log chaining starts at Phase 3. Open decisions stay in [decision-log.md](docs/design/group_a/decision-log.md). Layout decision: [ADR-0001](docs/design/group_a/adr/ADR-0001-repo-layout-and-independent-deploy.md).
+**Phase 3** is the current engineering baseline: an append-only hash-chained fact log. Group A identity applies control and capital events by polling that log. Staging records a soak start on first boot. The seven-day gate stays closed until that time has elapsed on an intact chain. Open decisions stay in [decision-log.md](docs/design/group_a/decision-log.md). Layout decision: [ADR-0001](docs/design/group_a/adr/ADR-0001-repo-layout-and-independent-deploy.md).

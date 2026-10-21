@@ -1,0 +1,9 @@
+[project]
+name = "sate-factlog"
+version = "0.3.0"
+description = "Append-only hash-chained fact log. Scope is on each event."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sate_factlog*"]

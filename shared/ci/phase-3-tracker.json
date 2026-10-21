@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "requirements": ["A-LOG-01", "A-LOG-02", "A-LOG-03", "A-LOG-04", "A-LOG-05", "A-LOG-06", "A-PR-08", "INV-09", "INV-10"],
+  "backlog_complete": ["A-P0-02"],
+  "soak": {
+    "required_days": 7,
+    "gate_met": false,
+    "note": "Staging bootstrap records the start time once. gate_met stays false until seven days elapse on an intact chain."
+  },
+  "evidence": [
+    "shared/fact-log/sate_factlog/log.py",
+    "shared/fact-log/config/staging.json",
+    "shared/schemas/event-envelope.schema.json",
+    "group_a/identity/sate_identity/sourced.py"
+  ]
+}
