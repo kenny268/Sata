@@ -15,6 +15,7 @@ from sate_runtime.journal import (
     GateError,
     persist_credential_use,
     persist_lifecycle,
+    persist_reconciliation,
     persist_verdict,
     submit_persisted,
 )
@@ -171,6 +172,49 @@ class JournalTests(unittest.TestCase):
                 correlation_id="A:i-1",
             )
         self.assertEqual(text.exception.code, "record")
+
+    def test_a_mismatch_is_stored_as_an_immediate_block(self) -> None:
+        log = _log()
+        observation = {
+            "result": "mismatch",
+            "halt": "L2",
+            "blocks_new_risk": True,
+            "allows_retry": False,
+            "corrected": True,
+            "manufactured_fill": False,
+            "diffs": [
+                {
+                    "entity": "position",
+                    "key": "EURUSD:BUY",
+                    "field": "quantity",
+                    "local": "1",
+                    "broker": "2",
+                }
+            ],
+        }
+        persist_reconciliation(
+            log,
+            observation,
+            event_id="r-1",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="recon-1",
+        )
+        stored = log.poll(after_seq=0, group_scope="A", reader_id="kernel-a")
+        self.assertEqual(stored[0].event_type, "reconciliation")
+        self.assertEqual(stored[0].payload["diffs"][0]["broker"], "2")
+        opened = dict(observation)
+        opened["blocks_new_risk"] = False
+        with self.assertRaises(GateError) as caught:
+            persist_reconciliation(
+                log,
+                opened,
+                event_id="r-2",
+                occurred_at=_NOW,
+                recorded_at=_NOW,
+                correlation_id="recon-1",
+            )
+        self.assertEqual(caught.exception.code, "halt")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from sate_runtime.journal import (
     GateError,
     persist_credential_use,
     persist_lifecycle,
+    persist_reconciliation,
     persist_verdict,
     submit_persisted,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "GateError",
     "persist_credential_use",
     "persist_lifecycle",
+    "persist_reconciliation",
     "persist_verdict",
     "submit_persisted",
 ]

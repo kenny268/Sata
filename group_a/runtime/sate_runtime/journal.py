@@ -114,6 +114,20 @@ def persist_lifecycle(log: FactLog, event: dict[str, object], **identity: str) -
     )
 
 
+def persist_reconciliation(log: FactLog, observation: dict[str, object], **identity: str) -> None:
+    payload = _reconciliation(observation)
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type="reconciliation",
+        group_scope="A",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(identity["correlation_id"]),
+        writer_id="kernel-a",
+        payload=payload,
+    )
+
+
 def persist_credential_use(log: FactLog, audit: dict[str, object], **identity: str) -> None:
     if set(audit) != set(_AUDIT_KEYS):
         raise GateError("credential audit cannot carry a secret", code="secret")
@@ -139,6 +153,50 @@ def persist_credential_use(log: FactLog, audit: dict[str, object], **identity: s
         writer_id="kernel-a",
         payload={key: audit[key] for key in _AUDIT_KEYS},
     )
+
+
+def _reconciliation(observation: dict[str, object]) -> dict[str, object]:
+    result = observation.get("result")
+    halt = observation.get("halt")
+    blocks = observation.get("blocks_new_risk")
+    retry = observation.get("allows_retry")
+    corrected = observation.get("corrected")
+    manufactured = observation.get("manufactured_fill")
+    diffs = observation.get("diffs")
+    if result not in {"clean", "mismatch", "ambiguous", "outage"}:
+        raise GateError("the reconciliation record is incomplete", code="record")
+    if halt not in {"", "L2"} or not isinstance(blocks, bool) or not isinstance(retry, bool):
+        raise GateError("the reconciliation record is incomplete", code="record")
+    if not isinstance(corrected, bool) or manufactured is not False or not isinstance(diffs, list):
+        raise GateError("reconciliation cannot manufacture a fill", code="fill")
+    blocked = result in {"mismatch", "ambiguous"}
+    if blocked and (blocks is not True or retry is not False or halt != "L2"):
+        raise GateError("a mismatch blocks new risk immediately", code="halt")
+    if result == "outage" and (blocks is not True or retry is not False):
+        raise GateError("a mismatch blocks new risk immediately", code="halt")
+    if result == "clean" and (blocks is not False or halt != "" or retry is not True):
+        raise GateError("the reconciliation record is incomplete", code="record")
+    return {
+        "result": result,
+        "halt": halt,
+        "blocks_new_risk": blocks,
+        "allows_retry": retry,
+        "corrected": corrected,
+        "manufactured_fill": False,
+        "diffs": [_diff(item) for item in diffs],
+    }
+
+
+def _diff(item: object) -> dict[str, str]:
+    if not isinstance(item, dict):
+        raise GateError("the reconciliation record is incomplete", code="record")
+    diff: dict[str, str] = {}
+    for key in ("entity", "key", "field", "local", "broker"):
+        value = item.get(key)
+        if not isinstance(value, str):
+            raise GateError("the reconciliation record is incomplete", code="record")
+        diff[key] = value
+    return diff
 
 
 def _lifecycle(event: dict[str, object]) -> dict[str, object]:

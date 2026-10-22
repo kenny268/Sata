@@ -1,0 +1,14 @@
+{
+  "phase": 13,
+  "requirements": ["A-REC-01", "A-REC-02", "A-REC-03", "A-REC-04", "A-PR-03", "A-KRN-03"],
+  "backlog_complete": ["A-P0-12"],
+  "not_this_phase": ["A-P0-13", "A-DEC-01", "A-DEC-07"],
+  "mismatch_block": "immediate",
+  "fills_manufactured": false,
+  "balance_cap_invented": false,
+  "daily_run_claimed": false,
+  "evidence": [
+    "group_a/kernel/reconcile/src/lib.rs",
+    "group_a/runtime/sate_runtime/journal.py"
+  ]
+}
