@@ -76,6 +76,8 @@ def _record(verdict: dict[str, object]) -> dict[str, object]:
     }
 
 
+_AUDIT_KEYS = ("action", "credential_id", "key_id", "previous_key_id", "mode", "purpose")
+_AUDIT_ACTIONS = frozenset({"inject", "rotate"})
 _SECRET_KEYS = frozenset({"password", "login", "secret", "server", "token", "api_key"})
 _ORDER_STATES = frozenset({"New", "Submitted", "Partial", "Filled", "Cancelled", "Failed"})
 _ORDER_KINDS = frozenset({"submit", "partial", "fill", "cancel", "fail", "timeout"})
@@ -109,6 +111,33 @@ def persist_lifecycle(log: FactLog, event: dict[str, object], **identity: str) -
         correlation_id=str(payload["correlation_id"]),
         writer_id="kernel-a",
         payload=payload,
+    )
+
+
+def persist_credential_use(log: FactLog, audit: dict[str, object], **identity: str) -> None:
+    if set(audit) != set(_AUDIT_KEYS):
+        raise GateError("credential audit cannot carry a secret", code="secret")
+    if any(key in _SECRET_KEYS for key in audit):
+        raise GateError("credential audit cannot carry a secret", code="secret")
+    action = str(audit["action"])
+    mode = str(audit["mode"])
+    if action not in _AUDIT_ACTIONS or mode not in {"SIM", "LIVE"}:
+        raise GateError("credential audit is incomplete", code="record")
+    for key in _AUDIT_KEYS:
+        value = audit[key]
+        if not isinstance(value, str):
+            raise GateError("credential audit is incomplete", code="record")
+        if key != "previous_key_id" and value == "":
+            raise GateError("credential audit is incomplete", code="record")
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type="credential_use",
+        group_scope="A",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(identity["correlation_id"]),
+        writer_id="kernel-a",
+        payload={key: audit[key] for key in _AUDIT_KEYS},
     )
 
 

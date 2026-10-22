@@ -11,7 +11,13 @@ import jsonschema
 
 from sate_factlog.log import FactLog
 
-from sate_runtime.journal import GateError, persist_lifecycle, persist_verdict, submit_persisted
+from sate_runtime.journal import (
+    GateError,
+    persist_credential_use,
+    persist_lifecycle,
+    persist_verdict,
+    submit_persisted,
+)
 
 _NOW = "2026-10-22T21:00:00Z"
 _SCHEMA = json.loads(
@@ -83,6 +89,41 @@ class JournalTests(unittest.TestCase):
             )
         self.assertEqual(incomplete.exception.code, "record")
         self.assertEqual(log.poll(after_seq=0, group_scope="A", reader_id="kernel-a"), [])
+
+    def test_credential_use_records_the_action_and_refuses_a_password(self) -> None:
+        log = _log()
+        audit = {
+            "action": "inject",
+            "credential_id": "exness-sim",
+            "key_id": "key-1",
+            "previous_key_id": "",
+            "mode": "SIM",
+            "purpose": "startup",
+        }
+        persist_credential_use(
+            log,
+            audit,
+            event_id="c-1",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="kernel-a",
+        )
+        stored = log.poll(after_seq=0, group_scope="A", reader_id="kernel-a")
+        self.assertEqual(stored[0].event_type, "credential_use")
+        self.assertNotIn("password", stored[0].payload)
+        leaked = dict(audit)
+        leaked["password"] = "s3cret-value"
+        with self.assertRaises(GateError) as caught:
+            persist_credential_use(
+                log,
+                leaked,
+                event_id="c-2",
+                occurred_at=_NOW,
+                recorded_at=_NOW,
+                correlation_id="kernel-a",
+            )
+        self.assertEqual(caught.exception.code, "secret")
+        self.assertEqual(len(log.poll(after_seq=0, group_scope="A", reader_id="kernel-a")), 1)
 
     def test_a_partial_fill_is_stored_on_the_order_correlation(self) -> None:
         log = _log()

@@ -16,6 +16,7 @@ def _append(
     event_id: str,
     event_type: str = "alert",
     occurred_at: str = "2026-10-21T00:00:00Z",
+    writer_id: str = "identity",
     **payload: object,
 ):
     return log.append(
@@ -25,7 +26,7 @@ def _append(
         occurred_at=occurred_at,
         recorded_at="2026-10-21T00:00:01Z",
         correlation_id="corr-1",
-        writer_id="identity",
+        writer_id=writer_id,
         payload=dict(payload),
     )
 
@@ -251,11 +252,22 @@ class FactLogTests(unittest.TestCase):
         log = _log()
         for index, event_type in enumerate(EVENT_TYPES):
             extra: dict[str, object] = {}
+            writer_id = "identity"
             if event_type == "journal":
                 extra = dict(_journal())
             elif event_type == "telegram":
                 extra = dict(_telegram())
-            _append(log, f"e-{index}", event_type=event_type, **extra)
+            elif event_type == "credential_use":
+                writer_id = "kernel-a"
+                extra = {
+                    "action": "inject",
+                    "credential_id": "exness-sim",
+                    "key_id": "key-1",
+                    "previous_key_id": "",
+                    "mode": "SIM",
+                    "purpose": "startup",
+                }
+            _append(log, f"e-{index}", event_type=event_type, writer_id=writer_id, **extra)
         self.assertIsNone(log.verify(reader_id="identity"))
 
     def test_readonly_reader_can_poll_but_not_append(self) -> None:

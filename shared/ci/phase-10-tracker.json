@@ -1,0 +1,14 @@
+{
+  "phase": 10,
+  "requirements": ["A-KRN-02", "A-PR-02", "A-MOD-05"],
+  "backlog_complete": ["A-P0-08"],
+  "not_this_phase": ["A-DEC-07", "A-P0-10"],
+  "host_path_separation": "phase-19",
+  "live_on_sim_refused": true,
+  "secrets_in_repo": false,
+  "evidence": [
+    "group_a/kernel/credentials/src/vault.rs",
+    "group_a/kernel/credentials/src/aead.rs",
+    "shared/ci/tests/test_credential_boundary.py"
+  ]
+}

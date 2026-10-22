@@ -24,6 +24,7 @@ EVENT_TYPES = (
     "signature",
     "deployment",
     "verdict",
+    "credential_use",
     "halt",
     "reimbursement",
     "invoice",
@@ -46,6 +47,7 @@ BLOCKING_TYPES = frozenset({
     "failure",
     "state_transition",
     "verdict",
+    "credential_use",
 })
 SCOPES = frozenset({"A", "B", "GLOBAL"})
 GENESIS = "0" * 64
@@ -193,6 +195,7 @@ class FactLog:
             occurred_at,
             recorded_at,
             correlation_id,
+            writer_id,
             payload,
         )
         policy = "BLOCK" if event_type in BLOCKING_TYPES else "DEGRADE"
@@ -446,6 +449,7 @@ class FactLog:
         occurred_at: str,
         recorded_at: str,
         correlation_id: str,
+        writer_id: str,
         payload: dict[str, object],
     ) -> None:
         if not event_id.strip() or not occurred_at.strip() or not recorded_at.strip():
@@ -468,6 +472,8 @@ class FactLog:
                     raise ValueError(f"telegram event requires {key}")
             if payload.get("scope") != group_scope:
                 raise ValueError("telegram scope must match group_scope")
+        if event_type == "credential_use":
+            _validate_credential_use(writer_id, payload)
 
     def _next_seq(self) -> int:
         row = self._conn.execute("SELECT COALESCE(MAX(seq), 0) FROM events").fetchone()
@@ -498,6 +504,34 @@ class FactLog:
     def _require_scope(self, group_scope: str) -> None:
         if group_scope not in SCOPES:
             raise ValueError(f"unknown group scope {group_scope!r}")
+
+
+_CREDENTIAL_KEYS = (
+    "action",
+    "credential_id",
+    "key_id",
+    "previous_key_id",
+    "mode",
+    "purpose",
+)
+_CREDENTIAL_SECRET_KEYS = frozenset({"password", "login", "secret", "server", "token", "api_key"})
+
+
+def _validate_credential_use(writer_id: str, payload: dict[str, object]) -> None:
+    if writer_id != "kernel-a":
+        raise ValueError("credential use is kernel-only")
+    if set(payload) != set(_CREDENTIAL_KEYS) or _CREDENTIAL_SECRET_KEYS & set(payload):
+        raise ValueError("credential audit cannot carry a secret")
+    action = payload["action"]
+    mode = payload["mode"]
+    if action not in {"inject", "rotate"} or mode not in {"SIM", "LIVE"}:
+        raise ValueError("credential audit is incomplete")
+    for key in _CREDENTIAL_KEYS:
+        value = payload[key]
+        if not isinstance(value, str):
+            raise ValueError("credential audit is incomplete")
+        if key != "previous_key_id" and not value.strip():
+            raise ValueError("credential audit is incomplete")
 
 
 def open_log(

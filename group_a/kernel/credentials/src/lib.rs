@@ -1,19 +1,8 @@
-//! Exness trade credentials may exist only in this crate (A-KRN-02, A-PR-02).
-//! Phase 1 keeps the boundary and stores no secrets.
+//! Exness trade credentials exist only in this crate (A-KRN-02, A-PR-02).
+//! The sealed file is encrypted. Startup injects it once, then wipes it.
+//! A SIM kernel refuses a LIVE record. Host-path separation remains Phase 19.
 
-/// Marker for the credential boundary. Later phases load a vault here.
-pub struct CredentialVault;
+mod aead;
+mod vault;
 
-impl CredentialVault {
-    pub const PHASE: &str = "1-stub";
-}
-
-#[cfg(test)]
-mod tests {
-    use super::CredentialVault;
-
-    #[test]
-    fn phase_one_holds_no_secret_material() {
-        assert_eq!(CredentialVault::PHASE, "1-stub");
-    }
-}
+pub use vault::{inject_at_startup, rotate_text, seal_text, Audit, Material, VaultError};
