@@ -1,0 +1,5 @@
+{
+  "group_scope": "A",
+  "fact_log": "shared/fact-log/var/staging.db",
+  "projection": "shared/treasury/var/staging.db"
+}

@@ -29,6 +29,7 @@ jobs:
           PYTHONPATH=shared/control-api python -m unittest discover -s shared/control-api/tests -t shared/control-api
           PYTHONPATH=shared/fact-log python -m unittest discover -s shared/fact-log/tests -t shared/fact-log
           PYTHONPATH=shared/capital:shared/rcb:shared/fact-log python -m unittest discover -s shared/capital/tests -t shared/capital
+          PYTHONPATH=shared/treasury:shared/capital:shared/rcb:shared/fact-log python -m unittest discover -s shared/treasury/tests -t shared/treasury
           PYTHONPATH=shared/rcb:shared/capital:shared/fact-log python -m unittest discover -s shared/rcb/tests -t shared/rcb
       - name: Publish sha-named artifact
         uses: actions/upload-artifact@v4

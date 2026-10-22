@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/treasury-obligation.schema.json",
+  "title": "TreasuryObligation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "obligation_id",
+    "group_scope",
+    "owner",
+    "due_date",
+    "currency",
+    "amount",
+    "broker_dependency",
+    "reserve",
+    "exposure_reduction_required"
+  ],
+  "properties": {
+    "obligation_id": { "type": "string", "minLength": 1 },
+    "group_scope": { "enum": ["A", "B"] },
+    "owner": { "type": "string", "minLength": 1 },
+    "due_date": { "type": "string", "minLength": 1 },
+    "currency": { "type": "string", "minLength": 1 },
+    "amount": { "type": "string", "minLength": 1 },
+    "broker_dependency": { "type": "string", "minLength": 1 },
+    "reserve": { "type": "boolean" },
+    "exposure_reduction_required": { "type": "boolean" }
+  }
+}

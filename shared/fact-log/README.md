@@ -2,7 +2,7 @@
 
 Append-only hash chain for control and capital events. Each row stores a CRC32 of its payload and the SHA-256 of the previous row. Corrections are new events. Updates and deletes are rejected by the database.
 
-Writers and readers must be on the allowlist (`identity`, `kernel-a`, `control-api`, `capital`, `rcb` in staging). An unknown writer cannot append, and an unknown reader cannot poll, query, export, or verify. A failed write raises `FactLogWriteError` and does not return an event. Halt, capital state, owner action, constitution, failure, and state-transition failures use policy `BLOCK`. Other types use `DEGRADE`.
+Writers and readers must be on the allowlist (`identity`, `kernel-a`, `control-api`, `capital`, `treasury`, `rcb` in staging). An unknown writer cannot append, and an unknown reader cannot poll, query, export, or verify. A failed write raises `FactLogWriteError` and does not return an event. Halt, capital state, owner action, constitution, failure, and state-transition failures use policy `BLOCK`. Other types use `DEGRADE`.
 
 A correction is a new event with `corrects_event_id`. The original row stays as it was. There is no method that increases RCB. An `rcb_change` row records a fact; cool-off and ratification belong to the capital service.
 

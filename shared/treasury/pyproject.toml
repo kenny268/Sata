@@ -1,0 +1,9 @@
+[project]
+name = "sate-treasury"
+version = "0.5.0"
+description = "Reimbursement-owed ledger. Separate from broker cash."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sate_treasury*"]

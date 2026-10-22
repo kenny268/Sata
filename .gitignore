@@ -20,4 +20,5 @@ dist/
 group_a/identity/var/
 shared/fact-log/var/
 shared/capital/var/
+shared/treasury/var/
 shared/rcb/var/

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from sate_factlog.log import open_log
 
-_WRITERS = frozenset({"identity", "kernel-a", "control-api", "capital", "rcb"})
+_WRITERS = frozenset({"identity", "kernel-a", "control-api", "capital", "treasury", "rcb"})
 
 
 def main() -> None:

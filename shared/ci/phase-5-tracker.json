@@ -1,0 +1,11 @@
+{
+  "phase": 5,
+  "requirements": ["A-TRE-01", "A-TRE-02", "INV-05", "A-OBL-01"],
+  "backlog_complete": ["A-P0-05"],
+  "not_this_phase": ["A-TRE-05", "A-TRE-06", "A-DEC-05"],
+  "evidence": [
+    "shared/treasury/sate_treasury/ledger.py",
+    "shared/treasury/config/staging.json",
+    "shared/schemas/treasury-obligation.schema.json"
+  ]
+}

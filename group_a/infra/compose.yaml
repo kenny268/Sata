@@ -88,6 +88,28 @@ services:
     read_only: true
     restart: "no"
 
+  treasury:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_treasury.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog:/capital
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_TREASURY_DB: /data/staging.db
+      SATE_FACTLOG_DB: /factlog-data/staging.db
+    volumes:
+      - ../../shared/treasury:/app:ro
+      - ../../shared/capital:/capital:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/factlog-data:ro
+      - treasury-data:/data
+    depends_on:
+      - fact-log
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+
   rcb:
     image: python:3.12-alpine
     command: python -m sate_rcb.bootstrap
@@ -121,5 +143,7 @@ volumes:
     name: sate-a-factlog
   capital-data:
     name: sate-a-capital
+  treasury-data:
+    name: sate-a-treasury
   rcb-data:
     name: sate-a-rcb
