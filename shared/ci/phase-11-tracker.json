@@ -1,0 +1,15 @@
+{
+  "phase": 11,
+  "requirements": ["A-MOD-02", "A-P0-10"],
+  "backlog_complete": ["A-P0-10"],
+  "not_this_phase": ["A-DEC-01", "A-DEC-07", "A-DEC-10", "A-P0-11"],
+  "real_demo_sessions_claimed": false,
+  "windows_terminal_opened": false,
+  "mt5_terms_verified": false,
+  "latency_baseline_claimed": false,
+  "evidence": [
+    "group_a/broker/mt5-bridge/sate_mt5_bridge/bridge.py",
+    "group_a/broker/mt5-bridge/sate_mt5_bridge/frames.py",
+    "group_a/broker/mt5-bridge/tests/test_bridge.py"
+  ]
+}

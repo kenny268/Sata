@@ -1,7 +1,7 @@
 [project]
 name = "sate-mt5-bridge"
-version = "0.1.0"
-description = "Group A MT5 bridge stub. No trading decisions and no credentials."
+version = "0.11.0"
+description = "Group A MT5 bridge. Demo contract only. No trade credentials."
 requires-python = ">=3.11"
 
 [tool.setuptools.packages.find]
