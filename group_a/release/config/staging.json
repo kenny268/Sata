@@ -1,0 +1,12 @@
+{
+  "group_scope": "A",
+  "artifact_id": "kernel-a",
+  "build_key_id": "build-key-1",
+  "build_public_key_hex": "5902b8c2c5ff9de31e079a504941d3f6b6a97379662d32a2c236cb020bdd6b82",
+  "deploy_key_id": "deploy-key-1",
+  "deploy_public_key_hex": "92c75ee088d27c663e831ad92e5da242aa77e8a099008a41cb7bf343f1e84bae",
+  "constitution_key_id": "owner-key-1",
+  "constitution_version": 1,
+  "constitution_hash": "aa91ee91261ff03ac6c8b605948d4127526dc7d6c2feeaff3fb4d564edba1fab",
+  "suite_version": "phase-8"
+}

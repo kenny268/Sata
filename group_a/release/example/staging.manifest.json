@@ -1,0 +1,15 @@
+{
+  "key_id": "build-key-1",
+  "payload_hash": "290d55514f7930207403055f0e5557462b3a28fccd30497df3b8a7943a29c767",
+  "signature": "56bdf935e1da9cefede6161453b892a0cf0223cb32d61346e234946102b9edbb853ac8a325321d794d7140c107b93dbdb6004af0807f089bc90c3cabaab9f607",
+  "canonical": "{\"artifact_id\":\"kernel-a\",\"binary_sha256\":\"8d6bf331728266a62c62b41243b34723a3b988f0af6ea58a520758e1898bf4b0\",\"built_at\":\"2026-10-22T21:00:00Z\",\"constitution_hash\":\"aa91ee91261ff03ac6c8b605948d4127526dc7d6c2feeaff3fb4d564edba1fab\",\"constitution_version\":1,\"git_sha\":\"7430fa16d0e9c2880a134c83ad796cc061e392cf\",\"group_id\":\"A\"}",
+  "manifest": {
+    "artifact_id": "kernel-a",
+    "group_id": "A",
+    "git_sha": "7430fa16d0e9c2880a134c83ad796cc061e392cf",
+    "constitution_hash": "aa91ee91261ff03ac6c8b605948d4127526dc7d6c2feeaff3fb4d564edba1fab",
+    "constitution_version": 1,
+    "binary_sha256": "8d6bf331728266a62c62b41243b34723a3b988f0af6ea58a520758e1898bf4b0",
+    "built_at": "2026-10-22T21:00:00Z"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "key_id": "deploy-key-1",
+  "payload_hash": "bf26c9d68b0eb44d17432cdff892d74f6e65b753cf14e2bea60370ef454285e7",
+  "signature": "0bca7e19f78d6b1ce60b364d00ffb25777a7569067eeaad9753e42e15d0560cbd50b63605ca4a178ce53be48415eca0593672b4ef9a828c3494de2c588904703",
+  "canonical": "{\"action\":\"activate\",\"artifact_id\":\"kernel-a\",\"authorized_at\":\"2026-10-22T21:00:00Z\",\"binary_sha256\":\"8d6bf331728266a62c62b41243b34723a3b988f0af6ea58a520758e1898bf4b0\",\"change_id\":\"release-a-001\",\"constitution_hash\":\"aa91ee91261ff03ac6c8b605948d4127526dc7d6c2feeaff3fb4d564edba1fab\",\"constitution_version\":1,\"git_sha\":\"7430fa16d0e9c2880a134c83ad796cc061e392cf\",\"group_id\":\"A\",\"reason\":\"stage the signed kernel stub\",\"safety_domains\":[\"kernel-artifact\"]}",
+  "authorization": {
+    "action": "activate",
+    "artifact_id": "kernel-a",
+    "group_id": "A",
+    "git_sha": "7430fa16d0e9c2880a134c83ad796cc061e392cf",
+    "constitution_hash": "aa91ee91261ff03ac6c8b605948d4127526dc7d6c2feeaff3fb4d564edba1fab",
+    "constitution_version": 1,
+    "binary_sha256": "8d6bf331728266a62c62b41243b34723a3b988f0af6ea58a520758e1898bf4b0",
+    "authorized_at": "2026-10-22T21:00:00Z",
+    "change_id": "release-a-001",
+    "reason": "stage the signed kernel stub",
+    "safety_domains": [
+      "kernel-artifact"
+    ]
+  }
+}

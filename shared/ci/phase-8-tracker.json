@@ -1,0 +1,11 @@
+{
+  "phase": 8,
+  "requirements": ["A-KRN-02", "A-PR-02", "A-CON-01"],
+  "backlog_complete": ["A-P0-19"],
+  "not_this_phase": ["A-DEC-07", "A-P0-09"],
+  "evidence": [
+    "group_a/release/README.md",
+    "group_a/release/example/staging.manifest.json",
+    "group_a/kernel/kernel-a/src/release.rs"
+  ]
+}

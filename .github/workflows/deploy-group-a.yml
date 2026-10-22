@@ -43,6 +43,7 @@ jobs:
           ruff check group_a shared
           PYTHONPATH=group_a/strategy python -m unittest discover -s group_a/strategy/tests -t group_a/strategy
           PYTHONPATH=group_a/identity:shared/fact-log python -m unittest discover -s group_a/identity/tests -t group_a/identity
+          PYTHONPATH=group_a/release:shared/fact-log python -m unittest discover -s group_a/release/tests -t group_a/release
           PYTHONPATH=group_a/runtime:shared/fact-log python -m unittest discover -s group_a/runtime/tests -t group_a/runtime
           python -c "import ast, pathlib; ast.parse(pathlib.Path('group_a/broker/mt5-bridge/sate_mt5_bridge/__init__.py').read_text())"
       - name: Publish sha-named artifact

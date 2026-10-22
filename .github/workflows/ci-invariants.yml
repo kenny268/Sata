@@ -18,6 +18,6 @@ jobs:
       - name: Lint
         run: pip install ruff cryptography jsonschema && ruff check shared group_a
       - name: Repository invariants and scope gate
-        run: python -m unittest shared/ci/tests/test_repo_invariants.py shared/ci/tests/test_credential_boundary.py shared/control-api/tests/test_scope.py shared/fact-log/tests/test_log.py shared/capital/tests/test_ledger.py shared/treasury/tests/test_treasury.py shared/rcb/tests/test_rcb.py shared/constitution/tests/test_constitution.py group_a/runtime/tests/test_journal.py group_a/strategy/tests/test_boundary.py group_a/identity/tests/test_registry.py group_a/identity/tests/test_config.py group_a/identity/tests/test_sourced.py
+        run: python -m unittest shared/ci/tests/test_repo_invariants.py shared/ci/tests/test_credential_boundary.py shared/control-api/tests/test_scope.py shared/fact-log/tests/test_log.py shared/capital/tests/test_ledger.py shared/treasury/tests/test_treasury.py shared/rcb/tests/test_rcb.py shared/constitution/tests/test_constitution.py group_a/release/tests/test_release.py group_a/runtime/tests/test_journal.py group_a/strategy/tests/test_boundary.py group_a/identity/tests/test_registry.py group_a/identity/tests/test_config.py group_a/identity/tests/test_sourced.py
         env:
-          PYTHONPATH: shared/control-api:shared/fact-log:shared/capital:shared/treasury:shared/rcb:shared/constitution:group_a/runtime:group_a/strategy:group_a/identity
+          PYTHONPATH: shared/control-api:shared/fact-log:shared/capital:shared/treasury:shared/rcb:shared/constitution:group_a/release:group_a/runtime:group_a/strategy:group_a/identity

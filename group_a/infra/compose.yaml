@@ -66,7 +66,6 @@ services:
     networks: [a-control]
     read_only: true
     restart: "no"
-
   capital:
     image: python:3.12-alpine
     working_dir: /app
@@ -87,7 +86,6 @@ services:
     networks: [a-control]
     read_only: true
     restart: "no"
-
   treasury:
     image: python:3.12-alpine
     working_dir: /app
@@ -155,6 +153,30 @@ services:
     read_only: true
     restart: "no"
 
+  release:
+    build:
+      context: ../release
+    image: sate-a-release:local
+    command: python -m sate_release.bootstrap
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_RELEASE_DB: /data/staging.db
+      SATE_FACTLOG_DB: /factlog-data/staging.db
+      SATE_RELEASE_SCHEMA: /schemas/kernel-release.schema.json
+    volumes:
+      - ../release:/app:ro
+      - ../../shared/schemas:/schemas:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/factlog-data:ro
+      - release-data:/data
+    depends_on:
+      - fact-log
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+
 networks:
   a-control:
     name: sate-a-control
@@ -173,3 +195,5 @@ volumes:
     name: sate-a-rcb
   constitution-data:
     name: sate-a-constitution
+  release-data:
+    name: sate-a-release

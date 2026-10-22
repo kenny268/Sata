@@ -16,6 +16,7 @@ _WRITERS = frozenset({
     "treasury",
     "rcb",
     "constitution",
+    "release",
 })
 
 
