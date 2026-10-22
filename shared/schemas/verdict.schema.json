@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sate.local/schemas/verdict.schema.json",
   "title": "Verdict",
-  "description": "Phase 1 contract stub. No order is legal without a verdict (INV-01), enforced in the kernel in a later phase.",
+  "description": "KERNEL-A verdict record. No order is legal without an allow verdict already stored (INV-01).",
   "type": "object",
   "additionalProperties": false,
   "required": ["intent_id", "kernel_version", "constitution_version", "decision", "checks", "issued_at"],

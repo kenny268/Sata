@@ -23,6 +23,7 @@ EVENT_TYPES = (
     "constitution",
     "signature",
     "deployment",
+    "verdict",
     "halt",
     "reimbursement",
     "invoice",
@@ -37,9 +38,15 @@ EVENT_TYPES = (
     "journal",
     "telegram",
 )
-BLOCKING_TYPES = frozenset(
-    {"halt", "capital_state", "owner_action", "constitution", "failure", "state_transition"}
-)
+BLOCKING_TYPES = frozenset({
+    "halt",
+    "capital_state",
+    "owner_action",
+    "constitution",
+    "failure",
+    "state_transition",
+    "verdict",
+})
 SCOPES = frozenset({"A", "B", "GLOBAL"})
 GENESIS = "0" * 64
 SCHEMA_VERSION = 1

@@ -1,0 +1,23 @@
+{
+  "phase": 9,
+  "requirements": [
+    "A-KRN-01",
+    "A-KRN-02",
+    "A-KRN-03",
+    "A-KRN-04",
+    "A-KRN-05",
+    "A-KRN-06",
+    "A-KRN-07",
+    "A-KRN-08",
+    "A-PR-02"
+  ],
+  "backlog_complete": ["A-P0-09"],
+  "not_this_phase": ["A-DEC-01", "A-DEC-02", "A-DEC-07", "A-P0-08"],
+  "latency_target_claimed": false,
+  "staging_24h_claimed": false,
+  "evidence": [
+    "group_a/kernel/verdict/src/engine.rs",
+    "group_a/kernel/verdict/src/session.rs",
+    "group_a/runtime/sate_runtime/journal.py"
+  ]
+}
