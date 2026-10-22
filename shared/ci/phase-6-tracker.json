@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "requirements": [
+    "A-RCB-01",
+    "A-RCB-02",
+    "A-RCB-03",
+    "A-RCB-04",
+    "A-RCB-05",
+    "A-RCB-06",
+    "A-RCB-07",
+    "A-RCB-08",
+    "INV-09"
+  ],
+  "backlog_complete": ["A-P0-06"],
+  "not_this_phase": ["A-DEC-02", "A-DEC-05"],
+  "evidence": [
+    "shared/rcb/sate_rcb/service.py",
+    "shared/rcb/sate_rcb/api.py",
+    "group_a/kernel/verdict/src/lib.rs"
+  ]
+}

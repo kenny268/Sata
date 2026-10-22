@@ -1,0 +1,9 @@
+[project]
+name = "sate-rcb"
+version = "0.6.0"
+description = "Ratified capital base, cool-off, and passkey ratification stub"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

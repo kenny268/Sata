@@ -19,3 +19,4 @@ dist/
 *.db
 group_a/identity/var/
 shared/fact-log/var/
+shared/rcb/var/

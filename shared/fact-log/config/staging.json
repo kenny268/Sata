@@ -1,5 +1,5 @@
 {
   "database": "shared/fact-log/var/staging.db",
-  "writers": ["identity", "kernel-a", "control-api"],
+  "writers": ["identity", "kernel-a", "control-api", "rcb"],
   "soak_days_required": 7
 }

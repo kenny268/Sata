@@ -1,0 +1,6 @@
+{
+  "group_scope": "A",
+  "fact_log": "shared/fact-log/var/staging.db",
+  "projection": "shared/rcb/var/staging.db",
+  "cool_off_days": 14
+}
