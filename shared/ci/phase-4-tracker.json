@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "requirements": [
+    "A-FEE-01",
+    "A-FEE-02",
+    "A-FEE-03",
+    "A-FEE-04",
+    "A-FEE-05",
+    "A-RCB-01",
+    "A-RCB-02",
+    "A-RCB-03",
+    "INV-04"
+  ],
+  "backlog_complete": ["A-P0-04"],
+  "not_this_phase": ["A-RCB-04", "A-RCB-05", "A-RCB-06", "A-RCB-07"],
+  "evidence": [
+    "shared/capital/sate_capital/ledger.py",
+    "shared/capital/config/staging.json",
+    "shared/schemas/capital-snapshot.schema.json"
+  ]
+}

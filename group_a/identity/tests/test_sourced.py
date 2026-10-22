@@ -116,6 +116,24 @@ class SourcedProjectionTests(unittest.TestCase):
                 os.environ.pop("SATE_IDENTITY_DB", None)
                 os.environ.pop("SATE_FACTLOG_DB", None)
 
+    def test_ledger_event_is_not_applied_as_a_risk_projection(self) -> None:
+        log = FactLog(sqlite3.connect(":memory:"), writers=frozenset({"identity"}))
+        registry = IdentityRegistry(sqlite3.connect(":memory:"))
+        log.append(
+            event_id="e-ledger",
+            event_type="capital_state",
+            group_scope="A",
+            occurred_at="2026-10-22T00:00:00Z",
+            recorded_at="2026-10-22T00:00:01Z",
+            correlation_id="capital",
+            writer_id="identity",
+            payload={"kind": "deposit", "amount": "10", "currency": "USD"},
+        )
+        cursor = apply_pending(log, registry, 0)
+        self.assertEqual(cursor, 1)
+        count = registry._conn.execute("SELECT COUNT(*) FROM risk_projections").fetchone()
+        self.assertEqual(count[0], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

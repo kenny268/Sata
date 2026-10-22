@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/capital-snapshot.schema.json",
+  "title": "CapitalSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "group_scope",
+    "broker_id",
+    "account_id",
+    "currency",
+    "source_ts",
+    "equity",
+    "realised_pnl",
+    "settled",
+    "reserved",
+    "cash_floor"
+  ],
+  "properties": {
+    "group_scope": { "enum": ["A", "B"] },
+    "broker_id": { "type": "string", "minLength": 1 },
+    "account_id": { "type": "string", "minLength": 1 },
+    "currency": { "type": "string", "minLength": 1 },
+    "source_ts": { "type": "string", "minLength": 1 },
+    "equity": { "type": "string", "minLength": 1 },
+    "realised_pnl": { "type": "string", "minLength": 1 },
+    "settled": { "type": "string", "minLength": 1 },
+    "reserved": { "type": "string", "minLength": 1 },
+    "cash_floor": { "type": "string", "minLength": 1 }
+  }
+}

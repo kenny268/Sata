@@ -67,6 +67,27 @@ services:
     read_only: true
     restart: "no"
 
+  capital:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_capital.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_CAPITAL_DB: /data/staging.db
+      SATE_FACTLOG_DB: /factlog-data/staging.db
+    volumes:
+      - ../../shared/capital:/app:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/factlog-data:ro
+      - capital-data:/data
+    depends_on:
+      - fact-log
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+
   rcb:
     image: python:3.12-alpine
     command: python -m sate_rcb.bootstrap
@@ -98,5 +119,7 @@ volumes:
     name: sate-a-identity
   factlog-data:
     name: sate-a-factlog
+  capital-data:
+    name: sate-a-capital
   rcb-data:
     name: sate-a-rcb

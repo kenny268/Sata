@@ -55,8 +55,8 @@ def apply_pending(log: FactLog, registry: IdentityRegistry, after_seq: int) -> i
     """Project new Group A events. Returns the cursor to store."""
     cursor = after_seq
     for record in log.poll(after_seq=after_seq, group_scope="A", reader_id="identity"):
-        if record.event_type == "capital_state":
-            projection_id = str(record.payload.get("projection_id", ""))
+        if record.event_type == "capital_state" and "projection_id" in record.payload:
+            projection_id = str(record.payload["projection_id"])
             if not registry.has_risk_projection(projection_id):
                 consume_fact_event(registry, record.as_envelope())
         elif record.event_type == "state_transition":

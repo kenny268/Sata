@@ -1,0 +1,9 @@
+[project]
+name = "sate-capital"
+version = "0.4.0"
+description = "Five-state capital ledger. Scope is on each projection."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sate_capital*"]
