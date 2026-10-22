@@ -11,7 +11,7 @@ import jsonschema
 
 from sate_factlog.log import FactLog
 
-from sate_runtime.journal import GateError, persist_verdict, submit_persisted
+from sate_runtime.journal import GateError, persist_lifecycle, persist_verdict, submit_persisted
 
 _NOW = "2026-10-22T21:00:00Z"
 _SCHEMA = json.loads(
@@ -83,6 +83,53 @@ class JournalTests(unittest.TestCase):
             )
         self.assertEqual(incomplete.exception.code, "record")
         self.assertEqual(log.poll(after_seq=0, group_scope="A", reader_id="kernel-a"), [])
+
+    def test_a_partial_fill_is_stored_on_the_order_correlation(self) -> None:
+        log = _log()
+        event = {
+            "intent_id": "i-1",
+            "client_id": "i-1",
+            "correlation_id": "A:i-1",
+            "state": "Partial",
+            "instrument": "EURUSD",
+            "side": "BUY",
+            "quantity": "1",
+            "filled": "0.4",
+            "remainder": "0.6",
+            "broker_id": None,
+            "kind": "partial",
+        }
+        persist_lifecycle(
+            log,
+            event,
+            event_id="o-1",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="A:i-1",
+        )
+        stored = log.by_correlation(group_scope="A", correlation_id="A:i-1", reader_id="kernel-a")
+        self.assertEqual(stored[0].event_type, "fills")
+        self.assertEqual(stored[0].payload["remainder"], "0.6")
+        with self.assertRaises(GateError) as caught:
+            persist_lifecycle(
+                log,
+                {**event, "quantity": 0.4},
+                event_id="o-2",
+                occurred_at=_NOW,
+                recorded_at=_NOW,
+                correlation_id="A:i-1",
+            )
+        self.assertEqual(caught.exception.code, "record")
+        with self.assertRaises(GateError) as text:
+            persist_lifecycle(
+                log,
+                {**event, "quantity": "abc"},
+                event_id="o-3",
+                occurred_at=_NOW,
+                recorded_at=_NOW,
+                correlation_id="A:i-1",
+            )
+        self.assertEqual(text.exception.code, "record")
 
 
 if __name__ == "__main__":

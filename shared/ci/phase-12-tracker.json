@@ -1,0 +1,13 @@
+{
+  "phase": 12,
+  "requirements": ["A-OMS-01", "A-OMS-02", "A-OMS-03", "A-OMS-04", "A-OMS-05"],
+  "backlog_complete": ["A-P0-11"],
+  "not_this_phase": ["A-DEC-01", "A-DEC-07", "A-P0-12"],
+  "duplicate_live_order_on_timeout": false,
+  "web_ui_claimed": false,
+  "evidence": [
+    "group_a/kernel/oms/src/lib.rs",
+    "group_a/kernel/oms/src/tests.rs",
+    "group_a/runtime/sate_runtime/journal.py"
+  ]
+}

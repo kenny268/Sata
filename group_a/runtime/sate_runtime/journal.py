@@ -76,6 +76,79 @@ def _record(verdict: dict[str, object]) -> dict[str, object]:
     }
 
 
+_SECRET_KEYS = frozenset({"password", "login", "secret", "server", "token", "api_key"})
+_ORDER_STATES = frozenset({"New", "Submitted", "Partial", "Filled", "Cancelled", "Failed"})
+_ORDER_KINDS = frozenset({"submit", "partial", "fill", "cancel", "fail", "timeout"})
+_SIDES = frozenset({"BUY", "SELL"})
+_LIFECYCLE_KEYS = (
+    "intent_id",
+    "client_id",
+    "correlation_id",
+    "state",
+    "instrument",
+    "side",
+    "quantity",
+    "filled",
+    "remainder",
+    "broker_id",
+    "kind",
+)
+
+
+def persist_lifecycle(log: FactLog, event: dict[str, object], **identity: str) -> None:
+    payload = _lifecycle(event)
+    if str(identity["correlation_id"]) != payload["correlation_id"]:
+        raise GateError("the order correlation is the idempotency key", code="record")
+    event_type = "fills" if payload["kind"] in {"partial", "fill"} else "orders"
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type=event_type,
+        group_scope="A",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(payload["correlation_id"]),
+        writer_id="kernel-a",
+        payload=payload,
+    )
+
+
+def _lifecycle(event: dict[str, object]) -> dict[str, object]:
+    if set(event) != set(_LIFECYCLE_KEYS) or any(key in _SECRET_KEYS for key in event):
+        raise GateError("the order record is incomplete", code="record")
+    kind = str(event["kind"])
+    state = str(event["state"])
+    side = str(event["side"])
+    intent_id = str(event["intent_id"])
+    if kind not in _ORDER_KINDS or state not in _ORDER_STATES or side not in _SIDES:
+        raise GateError("the order record is incomplete", code="record")
+    if event["correlation_id"] != f"A:{intent_id}" or event["client_id"] != intent_id:
+        raise GateError("the order correlation is the idempotency key", code="record")
+    broker_id = event["broker_id"]
+    if broker_id is not None and (not isinstance(broker_id, str) or broker_id == ""):
+        raise GateError("the order record is incomplete", code="record")
+    payload: dict[str, object] = {}
+    for key in _LIFECYCLE_KEYS:
+        if key == "broker_id":
+            payload[key] = broker_id
+            continue
+        value = event[key]
+        if not isinstance(value, str) or value == "":
+            raise GateError("the order record is incomplete", code="record")
+        if key in {"quantity", "filled", "remainder"} and not _decimal(value):
+            raise GateError("the order record is incomplete", code="record")
+        payload[key] = value
+    return payload
+
+
+def _decimal(value: str) -> bool:
+    if value.endswith("."):
+        return False
+    whole, dot, frac = value.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()):
+        return False
+    return whole == "0" or not whole.startswith("0")
+
+
 def _check(item: object) -> bool:
     if not isinstance(item, dict):
         return False
