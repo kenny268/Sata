@@ -5,7 +5,10 @@ edition = "2021"
 publish = false
 
 [dependencies]
+ed25519-dalek = "2"
 sate-a-constitution = { path = "../constitution" }
+serde_json = "1"
+sha2 = "0.10"
 sate-a-credentials = { path = "../credentials" }
 sate-a-oms = { path = "../oms" }
 sate-a-reconcile = { path = "../reconcile" }

@@ -131,6 +131,30 @@ services:
     read_only: true
     restart: "no"
 
+  constitution:
+    build:
+      context: ../../shared/constitution
+    image: sate-a-constitution:local
+    command: python -m sate_constitution.bootstrap
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_CONSTITUTION_DB: /data/staging.db
+      SATE_FACTLOG_DB: /factlog-data/staging.db
+      SATE_CONSTITUTION_SCHEMA: /schemas/constitution.schema.json
+    volumes:
+      - ../../shared/constitution:/app:ro
+      - ../../shared/schemas:/schemas:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/factlog-data:ro
+      - constitution-data:/data
+    depends_on:
+      - fact-log
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+
 networks:
   a-control:
     name: sate-a-control
@@ -147,3 +171,5 @@ volumes:
     name: sate-a-treasury
   rcb-data:
     name: sate-a-rcb
+  constitution-data:
+    name: sate-a-constitution

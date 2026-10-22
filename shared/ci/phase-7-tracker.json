@@ -1,0 +1,11 @@
+{
+  "phase": 7,
+  "requirements": ["A-CON-01", "A-CON-02", "A-CON-03", "A-CON-04"],
+  "backlog_complete": ["A-P0-07"],
+  "not_this_phase": ["A-DEC-01", "A-DEC-02", "A-DEC-04", "A-DEC-05", "A-P0-19"],
+  "evidence": [
+    "shared/schemas/constitution.schema.json",
+    "shared/constitution/example/appendix-a.json",
+    "group_a/kernel/constitution/src/lib.rs"
+  ]
+}

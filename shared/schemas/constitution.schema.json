@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/constitution.schema.json",
+  "title": "Constitution",
+  "description": "Signed Group A constitution. Lock hours of 0 are the A-DEC-04 placeholder.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "constitution_id",
+    "group_id",
+    "version",
+    "effective_at",
+    "expires_at",
+    "key_id",
+    "payload_hash",
+    "signature",
+    "canonical",
+    "document"
+  ],
+  "properties": {
+    "constitution_id": { "type": "string", "minLength": 1 },
+    "group_id": { "enum": ["A", "B"] },
+    "version": { "type": "integer", "minimum": 1 },
+    "effective_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "expires_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "key_id": { "type": "string", "minLength": 1 },
+    "payload_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "signature": { "type": "string", "pattern": "^[0-9a-f]{128}$" },
+    "canonical": { "type": "string", "minLength": 2 },
+    "document": { "$ref": "#/$defs/document" }
+  },
+  "$defs": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["meta", "mode", "universe", "risk", "capital", "checkin", "treasury", "notifications"],
+      "properties": {
+        "meta": { "$ref": "#/$defs/meta" },
+        "mode": { "$ref": "#/$defs/mode" },
+        "universe": { "$ref": "#/$defs/universe" },
+        "risk": { "$ref": "#/$defs/risk" },
+        "capital": { "$ref": "#/$defs/capital" },
+        "checkin": { "$ref": "#/$defs/checkin" },
+        "treasury": { "$ref": "#/$defs/treasury" },
+        "notifications": { "$ref": "#/$defs/notifications" }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["constitution_id", "group", "version", "signed_by", "tighten_lock_hours", "loosen_lock_hours"],
+      "properties": {
+        "constitution_id": { "type": "string", "minLength": 1 },
+        "group": { "enum": ["A", "B"] },
+        "version": { "type": "integer", "minimum": 1 },
+        "signed_by": { "type": "string", "minLength": 1 },
+        "tighten_lock_hours": { "type": "integer", "minimum": 0 },
+        "loosen_lock_hours": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "mode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "arming_delay_hours", "ramp_factor", "ramp_min_days", "evidence_window_days"],
+      "properties": {
+        "state": { "enum": ["SIM", "LIVE-L1", "LIVE-L2", "LIVE-L3"] },
+        "arming_delay_hours": { "type": "integer", "minimum": 0 },
+        "ramp_factor": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "ramp_min_days": { "type": "integer", "minimum": 0 },
+        "evidence_window_days": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "universe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["LIVE-L1", "LIVE-L2"],
+      "properties": {
+        "LIVE-L1": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "LIVE-L2": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_risk_per_trade_pct",
+        "max_open_notional_x_equity",
+        "max_daily_loss_pct",
+        "max_drawdown_pct",
+        "max_leverage_used",
+        "require_protective_stop",
+        "broker_balance_cap"
+      ],
+      "properties": {
+        "max_risk_per_trade_pct": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "max_open_notional_x_equity": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "max_daily_loss_pct": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "max_drawdown_pct": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "max_leverage_used": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "require_protective_stop": { "type": "boolean" },
+        "broker_balance_cap": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" }
+      }
+    },
+    "capital": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference_floor",
+        "floor_warning_band_pct",
+        "floor_breach_sessions",
+        "reentry_block_days",
+        "ratified_base",
+        "ratify_cooloff_days",
+        "ratify_requires",
+        "pause_injections_on"
+      ],
+      "properties": {
+        "reference_floor": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "floor_warning_band_pct": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "floor_breach_sessions": { "type": "integer", "minimum": 0 },
+        "reentry_block_days": { "type": "integer", "minimum": 0 },
+        "ratified_base": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "ratify_cooloff_days": { "type": "integer", "minimum": 0 },
+        "ratify_requires": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "pause_injections_on": { "type": "string", "minLength": 1 }
+      }
+    },
+    "checkin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reminder_days", "manage_only_days", "flatten_days", "max_away_days"],
+      "properties": {
+        "reminder_days": { "type": "integer", "minimum": 0 },
+        "manage_only_days": { "type": "integer", "minimum": 0 },
+        "flatten_days": { "type": "integer", "minimum": 0 },
+        "max_away_days": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "treasury": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cash_floor", "cost_allocation", "obligations_file"],
+      "properties": {
+        "cash_floor": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" },
+        "cost_allocation": { "type": "string", "minLength": 1 },
+        "obligations_file": { "type": "string", "minLength": 1 }
+      }
+    },
+    "notifications": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quiet_hours_utc", "mask_amounts"],
+      "properties": {
+        "quiet_hours_utc": { "type": "string", "minLength": 1 },
+        "mask_amounts": { "type": "boolean" }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+[project]
+name = "sate-constitution"
+version = "0.7.0"
+description = "Signed constitution, time-lock, and single active version"
+requires-python = ">=3.11"
+dependencies = ["cryptography>=42", "jsonschema>=4"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

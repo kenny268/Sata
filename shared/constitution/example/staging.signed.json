@@ -1,0 +1,70 @@
+{
+  "constitution_id": "A-001",
+  "group_id": "A",
+  "version": 1,
+  "effective_at": "2026-01-01T00:00:00Z",
+  "expires_at": "2027-10-22T00:00:00Z",
+  "key_id": "owner-key-1",
+  "payload_hash": "aa91ee91261ff03ac6c8b605948d4127526dc7d6c2feeaff3fb4d564edba1fab",
+  "signature": "10be9b3ef4e13d5aecfa08e814f6dc505512de1be9bd59b73c5df691f53db00753fa30bb26d391140744c800d2947e6201c40d5322089a9635cb9f41d680500c",
+  "canonical": "{\"capital\":{\"floor_breach_sessions\":3,\"floor_warning_band_pct\":\"10\",\"pause_injections_on\":\"L2+\",\"ratified_base\":\"0\",\"ratify_cooloff_days\":14,\"ratify_requires\":[\"web_passkey\"],\"reentry_block_days\":14,\"reference_floor\":\"500\"},\"checkin\":{\"flatten_days\":14,\"manage_only_days\":10,\"max_away_days\":30,\"reminder_days\":7},\"meta\":{\"constitution_id\":\"A-001\",\"group\":\"A\",\"loosen_lock_hours\":0,\"signed_by\":\"owner-key-1\",\"tighten_lock_hours\":0,\"version\":1},\"mode\":{\"arming_delay_hours\":24,\"evidence_window_days\":90,\"ramp_factor\":\"0.25\",\"ramp_min_days\":30,\"state\":\"SIM\"},\"notifications\":{\"mask_amounts\":false,\"quiet_hours_utc\":\"20:00-04:00\"},\"risk\":{\"broker_balance_cap\":\"0\",\"max_daily_loss_pct\":\"2\",\"max_drawdown_pct\":\"10\",\"max_leverage_used\":\"10\",\"max_open_notional_x_equity\":\"3\",\"max_risk_per_trade_pct\":\"0.5\",\"require_protective_stop\":true},\"treasury\":{\"cash_floor\":\"0\",\"cost_allocation\":\"pro_rata_rcb\",\"obligations_file\":\"obligations_A.toml\"},\"universe\":{\"LIVE-L1\":[\"EURUSD\"],\"LIVE-L2\":[]}}",
+  "document": {
+    "meta": {
+      "constitution_id": "A-001",
+      "group": "A",
+      "version": 1,
+      "signed_by": "owner-key-1",
+      "tighten_lock_hours": 0,
+      "loosen_lock_hours": 0
+    },
+    "mode": {
+      "state": "SIM",
+      "arming_delay_hours": 24,
+      "ramp_factor": "0.25",
+      "ramp_min_days": 30,
+      "evidence_window_days": 90
+    },
+    "universe": {
+      "LIVE-L1": [
+        "EURUSD"
+      ],
+      "LIVE-L2": []
+    },
+    "risk": {
+      "max_risk_per_trade_pct": "0.5",
+      "max_open_notional_x_equity": "3",
+      "max_daily_loss_pct": "2",
+      "max_drawdown_pct": "10",
+      "max_leverage_used": "10",
+      "require_protective_stop": true,
+      "broker_balance_cap": "0"
+    },
+    "capital": {
+      "reference_floor": "500",
+      "floor_warning_band_pct": "10",
+      "floor_breach_sessions": 3,
+      "reentry_block_days": 14,
+      "ratified_base": "0",
+      "ratify_cooloff_days": 14,
+      "ratify_requires": [
+        "web_passkey"
+      ],
+      "pause_injections_on": "L2+"
+    },
+    "checkin": {
+      "reminder_days": 7,
+      "manage_only_days": 10,
+      "flatten_days": 14,
+      "max_away_days": 30
+    },
+    "treasury": {
+      "cash_floor": "0",
+      "cost_allocation": "pro_rata_rcb",
+      "obligations_file": "obligations_A.toml"
+    },
+    "notifications": {
+      "quiet_hours_utc": "20:00-04:00",
+      "mask_amounts": false
+    }
+  }
+}

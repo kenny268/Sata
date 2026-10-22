@@ -1,0 +1,6 @@
+{
+  "group_scope": "A",
+  "key_id": "owner-key-1",
+  "public_key_hex": "7a64cbf01339dc8c8407bb90d8366b4726dda99bfb36af4ac77523c9227edefd",
+  "signed_example": "shared/constitution/example/staging.signed.json"
+}

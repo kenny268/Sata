@@ -24,13 +24,14 @@ jobs:
           python-version: "3.12"
       - name: Lint and test shared Python
         run: |
-          pip install ruff
+          pip install ruff cryptography jsonschema
           ruff check shared group_a
           PYTHONPATH=shared/control-api python -m unittest discover -s shared/control-api/tests -t shared/control-api
           PYTHONPATH=shared/fact-log python -m unittest discover -s shared/fact-log/tests -t shared/fact-log
           PYTHONPATH=shared/capital:shared/rcb:shared/fact-log python -m unittest discover -s shared/capital/tests -t shared/capital
           PYTHONPATH=shared/treasury:shared/capital:shared/rcb:shared/fact-log python -m unittest discover -s shared/treasury/tests -t shared/treasury
           PYTHONPATH=shared/rcb:shared/capital:shared/fact-log python -m unittest discover -s shared/rcb/tests -t shared/rcb
+          PYTHONPATH=shared/constitution:shared/fact-log python -m unittest discover -s shared/constitution/tests -t shared/constitution
       - name: Publish sha-named artifact
         uses: actions/upload-artifact@v4
         with:
