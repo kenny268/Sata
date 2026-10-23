@@ -28,6 +28,11 @@ class Phase23Tests(unittest.TestCase):
     def test_drill_suite_ids(self) -> None:
         suite = run_all_drills()
         self.assertTrue(suite.gate_met)
+        by_id = {item.drill_id: item.steps for item in suite.results}
+        self.assertIn("resume_after_clean", by_id["C.3"])
+        self.assertIn("reentry_block_14d", by_id["AM-A5"])
+        self.assertEqual(by_id["C.10"], ["watchdog_restart", "reconcile_before_resume"])
+        self.assertEqual(by_id["C.6"], ["day7_presence", "day10_lift", "day14_recovery"])
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ class ScenarioRunnerTests(unittest.TestCase):
         result = run_scenario_suite()
         export = result.export()
         self.assertTrue(result.green, export)
-        self.assertGreaterEqual(int(export["executable"]), 12)
+        self.assertEqual(int(export["stub"]), 0)
         seen = {item.scenario_id for item in result.outcomes}
         self.assertEqual(seen, set(all_scenario_ids()))
 

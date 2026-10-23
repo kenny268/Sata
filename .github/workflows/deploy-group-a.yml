@@ -43,8 +43,8 @@ jobs:
         run: |
           pip install "ruff==0.17.2" cryptography jsonschema
           ruff check group_a shared
-          PYTHONPATH=group_a/strategy:group_a/cognitive:group_a/adequacy:shared/halt-coordinator python -m unittest discover -s group_a/strategy/tests -t group_a/strategy
-          PYTHONPATH=group_a/adequacy:group_a/strategy:shared/halt-coordinator python -m unittest discover -s group_a/adequacy/tests -t group_a/adequacy
+          PYTHONPATH=group_a/strategy:group_a/cognitive:group_a/adequacy:group_a/runtime:group_a/broker/mt5-bridge:shared/halt-coordinator:shared/fact-log python -m unittest discover -s group_a/strategy/tests -t group_a/strategy
+          PYTHONPATH=group_a/adequacy:group_a/strategy:group_a/cognitive:group_a/live-l1:group_a/broker/mt5-bridge:group_a/runtime:shared/halt-coordinator:shared/control-api:shared/fact-log:shared/treasury:shared/capital:shared/rcb:shared/notifier-email python -m unittest discover -s group_a/adequacy/tests -t group_a/adequacy
           PYTHONPATH=group_a/cognitive:shared/fact-log python -m unittest discover -s group_a/cognitive/tests -t group_a/cognitive
           PYTHONPATH=group_a/identity:shared/fact-log python -m unittest discover -s group_a/identity/tests -t group_a/identity
           PYTHONPATH=group_a/release:shared/fact-log python -m unittest discover -s group_a/release/tests -t group_a/release
@@ -53,7 +53,7 @@ jobs:
           PYTHONPATH=group_a/compliance:group_a/broker/mt5-bridge:shared/fact-log:shared/control-api python -m unittest discover -s group_a/compliance/tests -t group_a/compliance
           PYTHONPATH=group_a/broker/mt5-bridge python -m unittest group_a/broker/mt5-bridge/tests/test_bat.py
           PYTHONPATH=group_a/live-readiness:group_a/compliance:group_a/cognitive:group_a/adequacy:shared/backup:shared/constitution:shared/control-api:shared/fact-log python -m unittest discover -s group_a/live-readiness/tests -t group_a/live-readiness
-          PYTHONPATH=group_a/live-l1:group_a/live-readiness:group_a/compliance:group_a/strategy:group_a/adequacy:group_a/broker/mt5-bridge:shared/control-api:shared/fact-log python -m unittest discover -s group_a/live-l1/tests -t group_a/live-l1
+          PYTHONPATH=group_a/live-l1:group_a/live-readiness:group_a/compliance:group_a/cognitive:group_a/strategy:group_a/adequacy:group_a/broker/mt5-bridge:group_a/runtime:shared/backup:shared/constitution:shared/control-api:shared/fact-log:shared/halt-coordinator:shared/rcb:shared/capital python -m unittest discover -s group_a/live-l1/tests -t group_a/live-l1
       - name: Publish sha-named artifact
         uses: actions/upload-artifact@v4
         with:

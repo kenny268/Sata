@@ -21,6 +21,7 @@ class OpenPhase22Tests(unittest.TestCase):
         self.assertTrue(result.green)
         export = result.export()
         self.assertGreaterEqual(int(export["executable"]), 12)
+        self.assertEqual(int(export["stub"]), 0)
 
     def test_champion_runner_and_dashboard_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

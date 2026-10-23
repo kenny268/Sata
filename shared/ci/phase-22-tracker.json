@@ -28,7 +28,6 @@
     "A-P1-03",
     "A-P1-06",
     "calendar A-SIM-01 six months (Phase 23)",
-    "full HL/OC/BF executable matrix",
     "A-DEC-05 owner override beyond pro_rata_rcb default"
   ],
   "evidence": [
@@ -41,6 +40,7 @@
     "group_a/adequacy/sate_adequacy/champion_runner.py",
     "group_a/adequacy/sate_adequacy/scenario_catalog.py",
     "group_a/adequacy/sate_adequacy/scenario_runner.py",
+    "group_a/adequacy/sate_adequacy/scenario_exec.py",
     "group_a/adequacy/sate_adequacy/champion.py",
     "group_a/adequacy/sate_adequacy/perf.py",
     "group_a/adequacy/sate_adequacy/dashboard.py",

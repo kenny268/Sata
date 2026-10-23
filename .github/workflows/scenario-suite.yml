@@ -18,12 +18,12 @@ jobs:
           python-version: "3.12"
       - name: §15 scenario harness + adequacy smoke
         run: |
-          PYTHONPATH=group_a/adequacy:group_a/strategy:group_a/cognitive:group_a/broker/mt5-bridge:shared/halt-coordinator:shared/control-api:shared/fact-log:shared/treasury:shared/capital:shared/rcb \
+          PYTHONPATH=group_a/adequacy:group_a/strategy:group_a/cognitive:group_a/live-l1:group_a/broker/mt5-bridge:group_a/runtime:shared/halt-coordinator:shared/control-api:shared/fact-log:shared/treasury:shared/capital:shared/rcb \
             python -m unittest \
               group_a/adequacy/tests/test_scenario_runner.py \
               group_a/adequacy/tests/test_adequacy.py \
               group_a/adequacy/tests/test_champion.py
-          PYTHONPATH=group_a/adequacy:group_a/strategy:group_a/cognitive:group_a/broker/mt5-bridge:group_a/runtime:shared/halt-coordinator:shared/control-api \
+          PYTHONPATH=group_a/adequacy:group_a/strategy:group_a/cognitive:group_a/live-l1:group_a/broker/mt5-bridge:group_a/runtime:shared/halt-coordinator:shared/control-api:shared/fact-log:shared/treasury:shared/capital:shared/rcb \
             python -m sate_adequacy.scenario_runner
-          PYTHONPATH=group_a/adequacy:group_a/strategy:group_a/cognitive:group_a/broker/mt5-bridge:group_a/runtime:shared/halt-coordinator:shared/control-api \
+          PYTHONPATH=group_a/adequacy:group_a/strategy:group_a/cognitive:group_a/live-l1:group_a/broker/mt5-bridge:group_a/runtime:shared/halt-coordinator:shared/control-api:shared/fact-log:shared/treasury:shared/capital:shared/rcb \
             python -m sate_adequacy.bootstrap

@@ -23,6 +23,7 @@ from sate_strategy_a.scenarios import (
 )
 
 from sate_adequacy.scenario_catalog import SCENARIO_FAMILIES, all_scenario_ids
+from sate_adequacy.scenario_exec import execute
 
 
 @dataclass
@@ -98,9 +99,8 @@ def _run_ts() -> list[ScenarioOutcome]:
     for scenario_id in SCENARIO_FAMILIES["TS"]:
         if scenario_id in done:
             continue
-        outcomes.append(
-            ScenarioOutcome(scenario_id, True, "catalogued stub", execution="stub")
-        )
+        ok, detail = execute(scenario_id)
+        outcomes.append(ScenarioOutcome(scenario_id, ok, detail))
     return outcomes
 
 
@@ -120,10 +120,12 @@ def _run_hl() -> list[ScenarioOutcome]:
     outcomes.append(
         ScenarioOutcome("HL-01", coordinator.mark_b_unreachable(command.command_id) is not None, "halt path")
     )
+    done = {item.scenario_id for item in outcomes}
     for scenario_id in SCENARIO_FAMILIES["HL"]:
-        if scenario_id == "HL-01":
+        if scenario_id in done:
             continue
-        outcomes.append(ScenarioOutcome(scenario_id, True, "catalogued stub", execution="stub"))
+        ok, detail = execute(scenario_id)
+        outcomes.append(ScenarioOutcome(scenario_id, ok, detail))
     return outcomes
 
 
@@ -142,7 +144,7 @@ def _run_oc() -> list[ScenarioOutcome]:
     return [
         ScenarioOutcome("OC-01", command.kill_level == "K1", "K1 issued"),
         *[
-            ScenarioOutcome(scenario_id, True, "catalogued stub", execution="stub")
+            ScenarioOutcome(scenario_id, *execute(scenario_id))
             for scenario_id in SCENARIO_FAMILIES["OC"]
             if scenario_id != "OC-01"
         ],
@@ -169,15 +171,17 @@ def _run_am() -> list[ScenarioOutcome]:
     for scenario_id in SCENARIO_FAMILIES["AM"]:
         if scenario_id in {"AM-02", "AM-03"}:
             continue
-        outcomes.append(ScenarioOutcome(scenario_id, True, "catalogued stub", execution="stub"))
+        ok, detail = execute(scenario_id)
+        outcomes.append(ScenarioOutcome(scenario_id, ok, detail))
     return outcomes
 
 
 def _run_ct() -> list[ScenarioOutcome]:
     zero = trading_advisory_multiplier(account_mode="LIVE") == 0.0
+    ok, detail = execute("CT-01")
     return [
         ScenarioOutcome("CT-08", zero, "advisory zero on budget path"),
-        ScenarioOutcome("CT-01", True, "catalogued stub", execution="stub"),
+        ScenarioOutcome("CT-01", ok, detail),
     ]
 
 
@@ -201,7 +205,8 @@ def _run_bf() -> list[ScenarioOutcome]:
     for scenario_id in SCENARIO_FAMILIES["BF"]:
         if scenario_id == "BF-01":
             continue
-        outcomes.append(ScenarioOutcome(scenario_id, True, "catalogued stub", execution="stub"))
+        ok, detail = execute(scenario_id)
+        outcomes.append(ScenarioOutcome(scenario_id, ok, detail))
     return outcomes
 
 
