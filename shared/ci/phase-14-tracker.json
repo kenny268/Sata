@@ -37,6 +37,8 @@
     "shared/ci/tests/test_phase14_tracker.py",
     "group_a/broker/mt5-bridge/sate_mt5_bridge/bridge.py",
     "group_a/broker/mt5-bridge/sate_mt5_bridge/terminal.py",
-    "group_a/runtime/sate_runtime/journal.py"
+    "group_a/runtime/sate_runtime/journal.py",
+    "group_a/strategy/sate_strategy_a/fx_calendar.py",
+    "group_a/strategy/sate_strategy_a/pre_kernel.py"
   ]
 }

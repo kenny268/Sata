@@ -96,6 +96,11 @@ pub struct KernelBook {
     pub lot_step: String,
     pub min_lot_policy: MinLotPolicy,
     pub slippage_window: SlippageWindow,
+    /// Set only when this window raised L1. A feed L1 is left in place.
+    pub slippage_l1_armed: bool,
+    /// Empty pair skips the check. A supplied FX week must match the loaded calendar.
+    pub calendar_week: String,
+    pub fx_week: String,
     pub ramp_open: bool,
     pub safe_mode: bool,
     pub market_stale: bool,
@@ -221,6 +226,10 @@ fn evaluate(
     if let Some(verdict) = cost_gate(book, checks) {
         return verdict;
     }
+    let mut arm_halt = None;
+    if book.halt_level.is_empty() && book.slippage_window.breached() {
+        arm_halt = Some("L1");
+    }
     if book.halt_level == "L1" || book.slippage_window.breached() {
         if let Some(verdict) = halve_for_l1(book, intent, checks, &mut size) {
             return verdict;
@@ -228,13 +237,13 @@ fn evaluate(
     }
     if book.rate_limited {
         push(checks, "rate_limit", "limited", "", false);
-        return (Decision::Throttle, "rate_limit", size, None);
+        return (Decision::Throttle, "rate_limit", size, arm_halt);
     }
     push(checks, "rate_limit", "clear", "", true);
     if size.is_empty() {
-        (Decision::Allow, "", String::new(), None)
+        (Decision::Allow, "", String::new(), arm_halt)
     } else {
-        (Decision::AllowWithSize, "", size, None)
+        (Decision::AllowWithSize, "", size, arm_halt)
     }
 }
 
@@ -309,8 +318,15 @@ fn mode_gate(
     if !book.universe.iter().any(|item| item == &intent.instrument) {
         return Some(reject(checks, "mode_universe", &intent.instrument, "universe", "universe", None));
     }
-    if book.require_protective_stop && intent.protective_stop.is_empty() {
-        return Some(reject(checks, "mode_universe", "", "stop", "protective_stop", None));
+    if book.require_protective_stop && cmp(&intent.protective_stop, "0") != Some(std::cmp::Ordering::Greater) {
+        return Some(reject(
+            checks,
+            "mode_universe",
+            &intent.protective_stop,
+            "stop",
+            "protective_stop",
+            None,
+        ));
     }
     push(checks, "mode_universe", &intent.instrument, &book.mode, true);
     None
@@ -557,6 +573,9 @@ fn blackout_gate(
     book: &KernelBook,
     checks: &mut Vec<Check>,
 ) -> Option<(Decision, &'static str, String, Option<&'static str>)> {
+    if !book.fx_week.is_empty() && book.calendar_week != book.fx_week {
+        return Some(reject(checks, "blackout_swap", &book.calendar_week, &book.fx_week, "calendar", None));
+    }
     if book.news_blackout {
         return Some(reject(checks, "blackout_swap", "blackout", "", "blackout", None));
     }

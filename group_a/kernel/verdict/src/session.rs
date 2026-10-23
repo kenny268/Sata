@@ -110,6 +110,9 @@ impl Session {
         let mut verdict = decide(&self.book, intent, issued_at);
         if verdict.arm_halt == Some("L2") {
             self.book.halt_level = "L2".to_string();
+        } else if verdict.arm_halt == Some("L1") && self.book.halt_level.is_empty() {
+            self.book.halt_level = "L1".to_string();
+            self.book.slippage_l1_armed = true;
         }
         self.seen.insert(intent.intent_id.clone(), self.verdicts.len());
         self.verdicts.push(verdict.clone());
@@ -139,13 +142,30 @@ impl Session {
 
     pub fn record_slippage(&mut self, within_budget: bool) {
         self.book.slippage_window.record(within_budget);
+        self.sync_slippage_halt();
     }
 
     /// PERF measurement on a fill price. An unknown instrument records a breach.
     pub fn measure_slippage(&mut self, instrument: &str, expected: &str, fill: &str) -> bool {
         let ok = within_budget(instrument, expected, fill);
         self.book.slippage_window.record(ok);
+        self.sync_slippage_halt();
         ok
+    }
+
+    /// L1 while the rolling window holds a breach. Recovery is that window, not an unset session count.
+    fn sync_slippage_halt(&mut self) {
+        if self.book.slippage_window.breached() {
+            if self.book.halt_level.is_empty() {
+                self.escalate_halt(HaltTrigger::SlippageBudget);
+                self.book.slippage_l1_armed = true;
+            }
+            return;
+        }
+        if self.book.slippage_l1_armed && self.book.halt_level == "L1" {
+            self.book.halt_level.clear();
+            self.book.slippage_l1_armed = false;
+        }
     }
 
     pub fn apply_kill(&mut self, level: KillLevel) -> Result<(), crate::kill::KillError> {

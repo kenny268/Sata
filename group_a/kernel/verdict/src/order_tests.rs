@@ -46,6 +46,9 @@ fn book() -> KernelBook {
         lot_step: String::new(),
         min_lot_policy: MinLotPolicy::Reject,
         slippage_window: SlippageWindow::default(),
+        slippage_l1_armed: false,
+        calendar_week: String::new(),
+        fx_week: String::new(),
         ramp_open: true,
         safe_mode: false,
         market_stale: false,
@@ -394,6 +397,50 @@ fn slippage_budget_breach_halves_like_l1() {
     let verdict = decide(&state, &intent(), "2026-10-22T21:00:00Z");
     assert_eq!(verdict.decision, Decision::AllowWithSize);
     assert_eq!(verdict.size, "0.5");
+    assert_eq!(verdict.arm_halt, Some("L1"));
+}
+
+#[test]
+fn slippage_breach_arms_l1_until_the_window_rolls_off() {
+    let mut session = Session::open(book(), 1);
+    assert!(!session.measure_slippage("EURUSD", "1.0850", "1.0852"));
+    assert_eq!(session.book.halt_level, "L1");
+    let halved = session.handle(&intent(), "2026-10-22T21:00:00Z");
+    assert_eq!(halved.size, "0.5");
+    for _ in 0..20 {
+        assert!(session.measure_slippage("EURUSD", "1.0850", "1.0850"));
+    }
+    assert_eq!(session.book.halt_level, "");
+    let mut again = intent();
+    again.intent_id = "i-2".to_string();
+    let restored = session.handle(&again, "2026-10-22T21:00:01Z");
+    assert_eq!(restored.decision, Decision::Allow);
+    assert!(restored.size.is_empty());
+}
+
+#[test]
+fn a_feed_l1_survives_a_clean_slippage_window() {
+    let mut session = Session::open(book(), 1);
+    session.book.halt_level = "L1".to_string();
+    for _ in 0..20 {
+        assert!(session.measure_slippage("EURUSD", "1.0850", "1.0850"));
+    }
+    assert_eq!(session.book.halt_level, "L1");
+}
+
+#[test]
+fn a_zero_protective_stop_does_not_open() {
+    let mut order = intent();
+    order.protective_stop = "0".to_string();
+    assert_eq!(decide(&book(), &order, "2026-10-22T21:00:00Z").reason, "protective_stop");
+}
+
+#[test]
+fn a_stale_fx_calendar_rejects_the_entry() {
+    let mut state = book();
+    state.fx_week = "2026-10-18".to_string();
+    state.calendar_week = "2026-10-11".to_string();
+    assert_eq!(decide(&state, &intent(), "2026-10-22T21:00:00Z").reason, "calendar");
 }
 
 #[test]

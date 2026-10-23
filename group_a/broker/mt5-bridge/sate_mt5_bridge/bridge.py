@@ -59,6 +59,7 @@ class Bridge:
         self.orders_enabled = False
         self.completed_sessions = 0
         self.ghost_submits = 0
+        self.stop_failures: list[dict[str, str]] = []
         self.latency_us = 0
         self._login = ""
         self._server = ""
@@ -179,6 +180,7 @@ class Bridge:
         if not reduce_only and not self.spec.complete:
             raise AdapterError("the contract spec has not been reported", code="spec")
         if not reduce_only and not protective_stop:
+            self._record_stop_failure(idempotency_key, "every entry carries a broker-side stop")
             raise AdapterError("every entry carries a broker-side stop", code="protective_stop")
         if not self.orders_enabled:
             raise AdapterError("an unknown settlement rule stays disabled", code="settlement")
@@ -202,16 +204,19 @@ class Bridge:
                 },
             )
         except AdapterError as exc:
+            if exc.code == "protective_stop":
+                self._record_stop_failure(idempotency_key, str(exc))
             self._fail(exc)
             raise
-        self._sent.add(idempotency_key)
         server_time = reply.get("server_time")
         if not isinstance(server_time, str) or not server_time:
             self.state = "UNVERIFIED"
             raise AdapterError("broker events carry a server time", code="malformed")
         stop_attached = reply.get("stop_attached") is True
         if not reduce_only and not stop_attached:
+            self._record_stop_failure(idempotency_key, "the broker-side stop was not verified")
             raise AdapterError("the broker-side stop was not verified", code="protective_stop")
+        self._sent.add(idempotency_key)
         order = Placeholder(
             idempotency_key=idempotency_key,
             instrument=instrument,
@@ -227,6 +232,17 @@ class Bridge:
 
     def withdraw(self) -> None:
         raise AdapterError("withdrawals stay on the manual owner path", code="manual")
+
+    def _record_stop_failure(self, intent_id: str, reason: str) -> None:
+        self.stop_failures.append(
+            {
+                "kind": "protective_stop",
+                "intent_id": intent_id,
+                "correlation_id": f"A:{intent_id}",
+                "reason": reason,
+                "code": "protective_stop",
+            }
+        )
 
     def gate_met(self) -> bool:
         return (

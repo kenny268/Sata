@@ -485,6 +485,9 @@ class BridgeTests(unittest.TestCase):
             )
         self.assertEqual(failed.exception.code, "protective_stop")
         self.assertEqual(bridge.terminal.submits, [])
+        self.assertEqual(bridge.stop_failures[0]["code"], "protective_stop")
+        self.assertEqual(bridge.stop_failures[0]["correlation_id"], "A:ord-1")
+        self.assertEqual(bridge.orders, {})
         bridge.close()
 
     def test_monitor_exports_bridge_state(self) -> None:

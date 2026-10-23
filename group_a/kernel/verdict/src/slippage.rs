@@ -55,6 +55,10 @@ impl SlippageWindow {
     pub fn len(&self) -> usize {
         self.within_budget.len()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.within_budget.is_empty()
+    }
 }
 
 #[cfg(test)]
