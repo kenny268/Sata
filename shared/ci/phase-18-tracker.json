@@ -65,6 +65,7 @@
     "shared/notifier-bot/tests/test_negative_auth.py",
     "shared/notifier-bot/tests/test_confirm_flows.py",
     "shared/notifier-bot/tests/test_p1_commands.py",
+    "shared/notifier-bot/tests/test_phase18_controls.py",
     "shared/ci/tests/test_phase18_tracker.py"
   ]
 }

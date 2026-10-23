@@ -408,13 +408,47 @@ class ControlApi:
         self.kill_state = level
         if level == "K3":
             self.trading_revoked = True
-        command_id = f"web-kill-{self._audit_seq + 1}"
+        command_id = f"{'tg' if validated['channel'] == 'telegram' else 'web'}-kill-{self._audit_seq + 1}"
         self.kill_command_id = command_id
         halt_state = self._issue_kill(command_id, scope, level, validated["channel"])
         self.halt_command = halt_state
         self.partial_halt = scope == "ALL" and halt_state != "HALT_CONFIRMED_ALL"
-        self._audit("kill", scope, f"{level}:{command_id}")
+        self._audit("kill", scope, f"{level}:{command_id}", channel=validated["channel"])
         return {**validated, "command_id": command_id, "halt_state": halt_state}
+
+    def telegram_reduce(self, body: dict[str, object]) -> dict[str, object]:
+        """Reduce-only entry for notifier-bot. Resume, arm, and loosen stay on the web."""
+        if str(body.get("channel", "")) != "telegram":
+            raise ValueError("telegram reduce requires the telegram channel")
+        action = str(body.get("action", ""))
+        if action in {"resume", "arm_live", "confirm_live", "loosen", "ratify"}:
+            raise ValueError("telegram cannot increase exposure")
+        scope = str(body.get("scope", "A"))
+        if action == "alive":
+            return self.post_checkin({"channel": "telegram_alive"})
+        if action == "cancel_arm":
+            return self.post_mode_cancel({})
+        if action == "mode_sim":
+            return self._telegram_mode_sim(scope, flatten=False)
+        if action == "mode_sim_flatten":
+            return self._telegram_mode_sim(scope, flatten=True)
+        if action in {"halt", "flatten", "kill"}:
+            level = {"halt": "K1", "flatten": "K2", "kill": "K3"}[action]
+            if scope == "B" and self.session.group_scope != "B":
+                raise ValueError("this control plane is not Group B")
+            return self.post_kill({"scope": scope, "kill_level": level, "channel": "telegram"})
+        raise ValueError(f"unknown telegram action {action}")
+
+    def _telegram_mode_sim(self, scope: str, *, flatten: bool) -> dict[str, object]:
+        if scope != "A":
+            raise ValueError("mode sim via telegram is Group A scoped")
+        authorize_control(self.session, "A")
+        self.mode = "SIM"
+        self._audit("mode_sim", "A", "telegram:LIVE-to-SIM", channel="telegram")
+        result: dict[str, object] = {"scope": "A", "mode": "SIM", "channel": "telegram"}
+        if flatten:
+            result["flatten"] = self.post_kill({"scope": "A", "kill_level": "K2", "channel": "telegram"})
+        return result
 
     def post_mode_sim(self, body: dict[str, object]) -> dict[str, object]:
         authorize_control(self.session, "A")
@@ -565,7 +599,7 @@ class ControlApi:
         )
         return str(command.status().value)
 
-    def _audit(self, action: str, scope: str, detail: str) -> None:
+    def _audit(self, action: str, scope: str, detail: str, *, channel: str = "web") -> None:
         self._audit_seq += 1
         correlation = f"web-{action}-{self._audit_seq}"
         persist_owner_action(
@@ -573,7 +607,7 @@ class ControlApi:
             {
                 "action": action,
                 "scope": scope,
-                "channel": "web",
+                "channel": channel,
                 "principal": self.session.principal,
                 "detail": detail,
             },

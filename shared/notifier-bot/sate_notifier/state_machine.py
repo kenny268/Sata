@@ -20,6 +20,10 @@ class SessionState:
     pending_scope: str = ""
     kill_step: int = 0
     expires_at: int = 0
+    issued_token: str = ""
+    pending_label: str = ""
+    alt_token: str = ""
+    alt_label: str = ""
 
     def reset(self) -> None:
         self.state = BotState.READY
@@ -27,6 +31,10 @@ class SessionState:
         self.pending_scope = ""
         self.kill_step = 0
         self.expires_at = 0
+        self.issued_token = ""
+        self.pending_label = ""
+        self.alt_token = ""
+        self.alt_label = ""
 
 
 @dataclass

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-WEB_AWAY_URL = "https://control.local/checkin/away"
+WEB_AWAY_URL = "/checkin"
 
 _AWAY_DURATIONS = (7, 14, 21, 30)
 

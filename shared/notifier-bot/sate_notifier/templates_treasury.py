@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-_COMBINED_LABEL = "Combined reporting — not transferable and not used for sizing or eligibility"
+from sate_notifier.tags import COMBINED_LABEL, scope_tag
 
 
 def treasury_card(
@@ -11,16 +11,18 @@ def treasury_card(
     cash_floor: str,
     obligations: str,
     reimbursement_state: str,
+    mode: str = "",
 ) -> dict[str, str]:
-    tag = f"[{scope}-LIVE]" if scope != "ALL" else "[ALL]"
+    tag = scope_tag(scope, mode)
+    combined = f"\n{COMBINED_LABEL}" if scope == "ALL" else ""
     return {
         "text": (
             f"{tag} TREASURY NOTICE\n"
             f"Cash floor: {cash_floor}\n"
             f"Open obligations: {obligations}\n"
-            f"Reimbursement: {reimbursement_state}\n"
-            f"{_COMBINED_LABEL if scope == 'ALL' else ''}"
-        ).strip(),
+            f"Reimbursement: {reimbursement_state}"
+            f"{combined}"
+        ),
         "category": "TREASURY",
         "severity": "NOTICE",
     }
