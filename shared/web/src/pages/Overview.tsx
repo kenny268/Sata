@@ -1,33 +1,57 @@
 import { useEffect, useState } from "react";
-import { fetchGroupState } from "../api/client";
+import { GroupState, fetchGroupState } from "../api/client";
+import { Fields } from "../components/Fields";
 import { ModeBadge } from "../components/ModeBadge";
 
+const empty = "unknown";
+
 export function OverviewPage() {
-  const [tag, setTag] = useState("A-SIM");
-  const [color, setColor] = useState("blue");
-  const [mode, setMode] = useState("SIM");
+  const [state, setState] = useState<GroupState | null>(null);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     fetchGroupState("A")
-      .then((state) => {
-        setMode(state.mode);
-        setTag(state.mode_badge.tag);
-        setColor(state.mode_badge.color);
-      })
-      .catch(() => {
-        setMode("SIM");
-        setTag("A-SIM");
-        setColor("blue");
+      .then(setState)
+      .catch((err: unknown) => {
+        setStatus(err instanceof Error ? err.message : "state unavailable");
       });
   }, []);
 
+  const capital = state?.capital;
   return (
     <section>
       <h1>Overview</h1>
       <p>
-        Mode <ModeBadge mode={mode} color={color} tag={tag} />
+        Mode{" "}
+        <ModeBadge
+          mode={state?.mode ?? "SIM"}
+          color={state?.mode_badge.color ?? "blue"}
+          tag={state?.mode_badge.tag ?? "A-SIM"}
+        />
       </p>
-      <p>Capital hierarchy, activity, and attention flags load from scoped read APIs.</p>
+      <h2>Capital hierarchy</h2>
+      <Fields
+        rows={[
+          ["Equity", capital?.equity ?? empty],
+          ["Reserved", capital?.reserved ?? empty],
+          ["Withdrawable", capital?.withdrawable ?? empty],
+          ["RCB", capital?.ratified_base ?? empty],
+        ]}
+      />
+      <h2>Activity</h2>
+      <Fields
+        rows={[
+          ["Arming", state?.arming.phase ?? "idle"],
+          ["Halt command", state?.risk.halt_command || "none"],
+        ]}
+      />
+      <h2>Attention</h2>
+      <ul>
+        {(state?.attention ?? []).map((flag) => (
+          <li key={flag}>{flag}</li>
+        ))}
+      </ul>
+      {status ? <p role="status">{status}</p> : null}
     </section>
   );
 }
