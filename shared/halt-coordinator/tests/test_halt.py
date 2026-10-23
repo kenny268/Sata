@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 
+from sate_halt.c1_runbook import KillView, run_c1
 from sate_halt.protocol import HaltState
 from sate_halt.service import Coordinator
 
@@ -48,6 +49,43 @@ class HaltCoordinatorTests(unittest.TestCase):
         self.assertTrue(drill.gate_met())
         with self.assertRaises(ValueError):
             drill.record(channel="web", kill_level="K1", mode="LIVE")
+
+    def test_c1_blocks_resume_until_web_and_reprovision(self) -> None:
+        mismatch = run_c1(
+            KillView(
+                channel="web",
+                kill_level="K2",
+                broker_positions=("EURUSD",),
+                system_positions=(),
+                fact_logged=True,
+            )
+        )
+        self.assertFalse(mismatch.executable())
+        k3 = run_c1(
+            KillView(
+                channel="telegram",
+                kill_level="K3",
+                broker_positions=(),
+                system_positions=(),
+                fact_logged=True,
+                web_passkey=True,
+                recon_clean=True,
+            )
+        )
+        self.assertTrue(k3.executable())
+        self.assertFalse(k3.resume_allowed)
+        opened = run_c1(
+            KillView(
+                channel="web",
+                kill_level="K1",
+                broker_positions=(),
+                system_positions=(),
+                fact_logged=True,
+                web_passkey=True,
+                recon_clean=True,
+            )
+        )
+        self.assertTrue(opened.resume_allowed)
 
 
 if __name__ == "__main__":
