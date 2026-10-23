@@ -76,6 +76,20 @@ class HaltCoordinatorTests(unittest.TestCase):
         )
         self.assertTrue(k3.executable())
         self.assertFalse(k3.resume_allowed)
+        unset = run_c1(
+            KillView(
+                channel="web",
+                kill_level="K1",
+                broker_positions=(),
+                system_positions=(),
+                fact_logged=True,
+                web_passkey=True,
+                recon_clean=True,
+                preflight_passed=True,
+            )
+        )
+        self.assertFalse(unset.resume_allowed)
+        self.assertIn("cool_off_unset", unset.steps)
         opened = run_c1(
             KillView(
                 channel="web",
@@ -85,9 +99,31 @@ class HaltCoordinatorTests(unittest.TestCase):
                 fact_logged=True,
                 web_passkey=True,
                 recon_clean=True,
+                cool_off_minutes=30,
+                cool_off_elapsed=True,
+                preflight_passed=True,
             )
         )
         self.assertTrue(opened.resume_allowed)
+        same_day = run_c1(
+            KillView(
+                channel="web",
+                kill_level="K1",
+                broker_positions=(),
+                system_positions=(),
+                fact_logged=True,
+                web_passkey=True,
+                recon_clean=True,
+                cool_off_minutes=30,
+                cool_off_elapsed=True,
+                preflight_passed=True,
+                halt_level="L3",
+                killed_on="2026-10-23T00:00:00Z",
+                resume_on="2026-10-23T20:00:00Z",
+            )
+        )
+        self.assertFalse(same_day.resume_allowed)
+        self.assertIn("same_day_blocked", same_day.steps)
 
 
 if __name__ == "__main__":

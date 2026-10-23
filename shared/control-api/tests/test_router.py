@@ -96,6 +96,24 @@ class ControlApiTests(unittest.TestCase):
         with self.assertRaises((PasskeyRequired, ValueError)):
             self.api.dispatch("POST", "/resume/A", {}, csrf_token=self._csrf())
 
+    def test_resume_stays_blocked_until_the_owner_sets_a_cool_off(self) -> None:
+        blocked = self.api.dispatch(
+            "POST",
+            "/resume/A",
+            {
+                "passkey_assertion": _PASSKEY,
+                "kill_level": "K1",
+                "fact_logged": True,
+                "recon_clean": True,
+                "preflight_passed": True,
+                "broker_positions": [],
+                "system_positions": [],
+            },
+            csrf_token=self._csrf(),
+        )
+        self.assertEqual(blocked["status"], "resume_blocked")
+        self.assertIn("cool_off_unset", blocked["steps"])
+
 
 if __name__ == "__main__":
     unittest.main()

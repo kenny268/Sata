@@ -302,6 +302,9 @@ def _oc07() -> tuple[bool, str]:
         fact_logged=True,
         web_passkey=True,
         recon_clean=True,
+        cool_off_minutes=30,
+        cool_off_elapsed=True,
+        preflight_passed=True,
     )
     result = run_c1(view)
     return result.resume_allowed, ",".join(result.steps)
@@ -325,8 +328,12 @@ def _oc08() -> tuple[bool, str]:
             system_positions=(),
             fact_logged=True,
             reprovisioned=True,
+            sim_before_live=True,
             web_passkey=True,
             recon_clean=True,
+            cool_off_minutes=30,
+            cool_off_elapsed=True,
+            preflight_passed=True,
         )
     )
     return (not blocked.resume_allowed) and opened.resume_allowed, ",".join(opened.steps)

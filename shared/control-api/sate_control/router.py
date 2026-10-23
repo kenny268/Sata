@@ -9,6 +9,7 @@ from sate_control.audit import persist_owner_action
 from sate_control.auth import Session, authorize_control, authorize_read
 from sate_control.checkin_service import apply_away, apply_checkin
 from sate_control.kill import validate_kill, validate_resume
+from sate_halt.c1_runbook import KillView, run_c1
 from sate_control.passkey import require_passkey
 from sate_control.preflight import preflight_arm_live
 from sate_control.reporting import reject_global_risk_scope
@@ -205,8 +206,30 @@ class ControlApi:
         authorize_control(self.session, "A")
         validate_resume(str(body.get("channel", "web")))
         require_passkey(assertion=_str(body, "passkey_assertion"), action="resume")
-        self._audit("resume", "A", "A")
-        return {"scope": "A", "status": "resume_pending"}
+        minutes = body.get("resume_cooloff_minutes")
+        cool_off = minutes if isinstance(minutes, int) and minutes > 0 else None
+        result = run_c1(
+            KillView(
+                channel="web",
+                kill_level=str(body.get("kill_level", "")),
+                broker_positions=_labels(body, "broker_positions"),
+                system_positions=_labels(body, "system_positions"),
+                fact_logged=body.get("fact_logged") is True,
+                web_passkey=True,
+                recon_clean=body.get("recon_clean") is True,
+                reprovisioned=body.get("reprovisioned") is True,
+                sim_before_live=body.get("sim_before_live") is True,
+                cool_off_minutes=cool_off,
+                cool_off_elapsed=body.get("cool_off_elapsed") is True,
+                preflight_passed=body.get("preflight_passed") is True,
+                halt_level=str(body.get("halt_level", "")),
+                killed_on=str(body.get("killed_on", "")),
+                resume_on=str(body.get("resume_on", "")),
+            )
+        )
+        status = "resume_allowed" if result.resume_allowed else "resume_blocked"
+        self._audit("resume", "A", status)
+        return {"scope": "A", "status": status, "steps": result.steps}
 
     def post_checkin(self, body: dict[str, object]) -> dict[str, object]:
         authorize_control(self.session, "A")
@@ -277,6 +300,13 @@ def _str(body: dict[str, object], key: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{key} is required")
     return value.strip()
+
+
+def _labels(body: dict[str, object], key: str) -> tuple[str, ...]:
+    value = body.get(key, [])
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        return (f"malformed:{key}",)
+    return tuple(value)
 
 
 def _optional_str(body: dict[str, object], key: str) -> str | None:

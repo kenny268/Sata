@@ -15,6 +15,13 @@ class KillView:
     web_passkey: bool = False
     recon_clean: bool = False
     reprovisioned: bool = False
+    sim_before_live: bool = False
+    cool_off_minutes: int | None = None
+    cool_off_elapsed: bool = False
+    preflight_passed: bool = False
+    halt_level: str = ""
+    killed_on: str = ""
+    resume_on: str = ""
 
 
 @dataclass
@@ -41,14 +48,38 @@ def run_c1(view: KillView) -> C1Result:
         result.steps.append("fact_log_missing")
         return result
     result.steps.append("fact_log")
+    if view.halt_level in {"L3", "L4"} and _same_day(view.killed_on, view.resume_on):
+        result.steps.append("same_day_blocked")
+        return result
     if view.kill_level == "K3":
         if not view.reprovisioned:
             result.steps.append("k3_reprovision_required")
             return result
         result.steps.append("k3_reprovisioned")
+        if not view.sim_before_live:
+            result.steps.append("k3_sim_before_live")
+            return result
+        result.steps.append("sim_before_live")
+    if view.cool_off_minutes is None or view.cool_off_minutes <= 0:
+        result.steps.append("cool_off_unset")
+        return result
+    if not view.cool_off_elapsed:
+        result.steps.append("cool_off_waiting")
+        return result
+    result.steps.append("cool_off_complete")
+    if not view.preflight_passed:
+        result.steps.append("preflight_required")
+        return result
+    result.steps.append("preflight")
     if view.web_passkey and view.recon_clean:
         result.steps.append("resume_via_web")
         result.resume_allowed = True
     else:
         result.steps.append("resume_waits_for_web")
     return result
+
+
+def _same_day(killed_on: str, resume_on: str) -> bool:
+    if len(killed_on) < 10 or len(resume_on) < 10:
+        return True
+    return killed_on[:10] == resume_on[:10]
