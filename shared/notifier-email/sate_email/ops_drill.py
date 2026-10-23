@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from sate_email.checkin_sim import assert_effect, lapse_effect
+from sate_email.checkin_sim import assert_effect, days_after_away, lapse_effect, risk_increase_allowed
 
 
 @dataclass
@@ -30,9 +30,14 @@ def exercise_op01_to_op06(log: OpsDrillLog) -> None:
     log.record("OP-02")
     assert_effect("OP-03", "flatten", days_without=14, account_mode="LIVE")
     log.record("OP-03")
-    if lapse_effect(days_without=9, account_mode="LIVE") != "reminder":
-        raise AssertionError("OP-04 away mode keeps timers extended before day 10")
+    extended = days_after_away(last_day=0, current_day=16, away_until_day=15)
+    if extended != 1 or lapse_effect(days_without=extended, account_mode="LIVE") != "ok":
+        raise AssertionError("OP-04 away mode keeps the absence off the lapse clock")
+    if lapse_effect(days_without=16, account_mode="LIVE") != "flatten":
+        raise AssertionError("OP-04 a 16-day lapse without away flattens")
     log.record("OP-04")
     assert_effect("OP-05", "continue", days_without=14, account_mode="SIM")
     log.record("OP-05")
+    if risk_increase_allowed(channel="telegram_alive") or not risk_increase_allowed(channel="web_passkey"):
+        raise AssertionError("OP-06 a risk increase needs the web passkey")
     log.record("OP-06")

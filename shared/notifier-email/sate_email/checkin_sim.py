@@ -24,6 +24,15 @@ def lapse_effect(
     return "ok"
 
 
+def days_after_away(*, last_day: int, current_day: int, away_until_day: int) -> int:
+    """Absence covered by away does not count. The clock starts at the later anchor."""
+    return max(0, current_day - max(last_day, away_until_day))
+
+
+def risk_increase_allowed(*, channel: str) -> bool:
+    return channel == "web_passkey"
+
+
 def assert_effect(op_id: str, expected: str, **kwargs: object) -> None:
     effect = lapse_effect(**kwargs)  # type: ignore[arg-type]
     if effect != expected:

@@ -45,10 +45,8 @@ impl Default for CheckinBook {
 }
 
 pub fn days_without(book: &CheckinBook) -> u64 {
-    if book.away_until_day > 0 && book.current_day <= book.away_until_day {
-        return 0;
-    }
-    book.current_day.saturating_sub(book.last_day)
+    let anchor = book.last_day.max(book.away_until_day);
+    book.current_day.saturating_sub(anchor)
 }
 
 pub fn tier(book: &CheckinBook) -> CheckinTier {
@@ -73,6 +71,7 @@ pub fn set_away(book: &mut CheckinBook, days: u32) -> Result<(), CheckinError> {
     if days == 0 || days > book.max_away_days {
         return Err(CheckinError::AwayDays);
     }
+    book.last_day = book.current_day;
     book.away_until_day = book.current_day.saturating_add(u64::from(days));
     Ok(())
 }
@@ -92,8 +91,8 @@ mod tests {
         assert_eq!(days_without(&book), 0);
         assert_eq!(tier(&book), CheckinTier::Ok);
         book.current_day = 16;
-        assert_eq!(days_without(&book), 16);
-        assert_eq!(tier(&book), CheckinTier::Flatten);
+        assert_eq!(days_without(&book), 1);
+        assert_eq!(tier(&book), CheckinTier::Ok);
     }
 
     #[test]
