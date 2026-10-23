@@ -19,6 +19,6 @@ class DrillLog:
         self.levels.add(kill_level)
 
     def gate_met(self) -> bool:
-        required_channels = {"telegram", "web", "cli"}
+        required_channels = {"telegram", "web", "cli", "trusted_contact"}
         required_levels = {"K1", "K2", "K3"}
         return required_channels <= self.channels and required_levels <= self.levels

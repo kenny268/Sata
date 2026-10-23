@@ -46,6 +46,8 @@ class HaltCoordinatorTests(unittest.TestCase):
         self.assertFalse(drill.gate_met())
         drill.record(channel="web", kill_level="K2", mode="SIM")
         drill.record(channel="cli", kill_level="K3", mode="SIM")
+        self.assertFalse(drill.gate_met())
+        drill.record(channel="trusted_contact", kill_level="K1", mode="SIM")
         self.assertTrue(drill.gate_met())
         with self.assertRaises(ValueError):
             drill.record(channel="web", kill_level="K1", mode="LIVE")
