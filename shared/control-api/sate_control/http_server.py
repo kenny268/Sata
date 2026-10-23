@@ -108,6 +108,7 @@ def _respond(handler: BaseHTTPRequestHandler, status: int, payload: dict) -> Non
     body = json.dumps(payload).encode("utf-8")
     handler.send_response(status)
     handler.send_header("Content-Type", "application/json")
+    handler.send_header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
     handler.send_header("Content-Length", str(len(body)))
     handler.end_headers()
     handler.wfile.write(body)

@@ -11,6 +11,7 @@ from sate_control.scope import require_scope
 class Session:
     principal: str
     group_scope: str
+    expires_at: str = ""
 
     def __post_init__(self) -> None:
         require_scope(self.group_scope)

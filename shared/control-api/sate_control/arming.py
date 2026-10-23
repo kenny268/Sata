@@ -33,6 +33,7 @@ class ArmingSession:
         self.phase = "arming"
         self.arm_started_at = started_at
         self.otp = otp
+        self.pending_reasons = []
         return {"status": "arming", "delay_hours": "24"}
 
     def confirm(
