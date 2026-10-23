@@ -47,6 +47,7 @@ class OpenPhase26Tests(unittest.TestCase):
                 "passkey_assertion": _PASSKEY,
                 "code": "999999",
                 "live_l1_staging": True,
+                "flat_confirmed": True,
                 "first_session_id": "live-l1-test-1",
             },
             csrf_token=api.issue_csrf()["csrf_token"],

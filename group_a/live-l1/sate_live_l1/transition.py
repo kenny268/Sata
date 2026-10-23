@@ -10,8 +10,14 @@ from sate_live_l1.safe_window import SafeWindow
 from sate_live_l1.shadow_twin import start_shadow_twin
 
 
-def activate_live_l1(log: FactLog, *, at: str, first_session_id: str | None = None) -> dict[str, object]:
-    window = SafeWindow(scheduled_at=at)
+def activate_live_l1(
+    log: FactLog,
+    *,
+    at: str,
+    first_session_id: str | None = None,
+    flat_confirmed: bool = False,
+) -> dict[str, object]:
+    window = SafeWindow(scheduled_at=at, flat_confirmed=flat_confirmed)
     if not window.ready():
         raise ValueError("safe_window_not_ready")
     persist_safe_window(log, scheduled_at=at)

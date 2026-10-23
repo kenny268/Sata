@@ -30,7 +30,7 @@ def main() -> None:
     at = os.environ.get("SATE_LIVE_L1_AT", "2026-10-23T22:00:00Z")
     log = _log()
     session_id = f"live-l1-{at[:10]}"
-    activate_live_l1(log, at=at, first_session_id=session_id)
+    activate_live_l1(log, at=at, first_session_id=session_id, flat_confirmed=True)
     terminal = MockTerminal(
         login="10001",
         server="Exness-MT5Trial",

@@ -50,7 +50,12 @@ def _activate_live_l1(log: FactLog, *, at: str, body: dict[str, object]) -> dict
     except ImportError:
         return {}
     session_id = str(body.get("first_session_id", f"live-l1-{at[:10]}"))
-    return activate_live_l1(log, at=at, first_session_id=session_id)
+    return activate_live_l1(
+        log,
+        at=at,
+        first_session_id=session_id,
+        flat_confirmed=body.get("flat_confirmed") is True,
+    )
 
 
 def _live_readiness(body: dict[str, object], log: FactLog | None, *, broker_preflight_ok: bool):

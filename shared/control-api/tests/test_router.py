@@ -86,6 +86,7 @@ class ControlApiTests(unittest.TestCase):
                 "passkey_assertion": _PASSKEY,
                 "code": "999999",
                 "live_l1_staging": True,
+                "flat_confirmed": True,
             },
             csrf_token=self._csrf(),
         )

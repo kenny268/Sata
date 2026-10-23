@@ -9,6 +9,9 @@ from dataclasses import dataclass
 class SafeWindow:
     scheduled_at: str
     flat_required: bool = True
+    flat_confirmed: bool = False
 
     def ready(self) -> bool:
-        return True
+        if not self.flat_required:
+            return True
+        return self.flat_confirmed
