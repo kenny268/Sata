@@ -52,5 +52,7 @@ def size_position(
     risk_at_size = floored * stop * vpu
     if risk_at_size > budget:
         return SizeResult(quantity="0", rejected=True, reason="untradeable_at_this_capital")
-    qty = format(floored.normalize(), "f").rstrip("0").rstrip(".") or "0"
-    return SizeResult(quantity=qty, rejected=False)
+    qty = format(floored, "f")
+    if "." in qty:
+        qty = qty.rstrip("0").rstrip(".")
+    return SizeResult(quantity=qty or "0", rejected=False)
