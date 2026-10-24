@@ -1,0 +1,12 @@
+{
+  "decision": "A-DEC-07",
+  "description": "Operator checklist before Windows exec host is considered provisioned.",
+  "items": [
+    { "id": "WIN-01", "text": "Dedicated Windows host for KERNEL-A and MT5", "required": true },
+    { "id": "WIN-02", "text": "OS updates scheduled outside trading windows", "required": true },
+    { "id": "WIN-03", "text": "Private connectivity to control-api and fact log", "required": true },
+    { "id": "WIN-04", "text": "Halt state reload + reconcile tested after restart", "required": true },
+    { "id": "WIN-05", "text": "Broker credentials not stored in git or fact log", "required": true }
+  ],
+  "provisioned": false
+}

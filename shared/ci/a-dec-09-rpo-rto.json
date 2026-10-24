@@ -1,0 +1,7 @@
+{
+  "decision": "A-DEC-09",
+  "description": "Numeric RPO/RTO targets are owner-set; harness and evidence schema exist in Phase 19.",
+  "rpo_minutes": null,
+  "rto_minutes": null,
+  "live_gate_blocked_until_set": true
+}

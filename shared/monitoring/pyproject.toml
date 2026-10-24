@@ -1,0 +1,9 @@
+[project]
+name = "sate-monitoring"
+version = "0.19.0"
+description = "Metrics and CRITICAL alerting (Phase 19, A-P0-17)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
