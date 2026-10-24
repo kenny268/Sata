@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
 from sate_rcb.errors import RcbError
@@ -13,7 +13,7 @@ HALT_LEVELS = frozenset({"L1", "L2", "L3", "L4"})
 SEVERE_HALTS = frozenset({"L2", "L3", "L4"})
 COOL_OFF_DAYS = 14
 # Reference floors from the system overview. They are not L2 or L3 rungs.
-REFERENCE_FLOOR = {"A": Decimal("500"), "B": Decimal("200")}
+REFERENCE_FLOOR = {"A": Decimal(500), "B": Decimal(200)}
 _FORBIDDEN = frozenset({
     "combined_equity",
     "combined_rcb",
@@ -22,7 +22,7 @@ _FORBIDDEN = frozenset({
     "withdrawable_cash",
     "cash",
 })
-_ZERO = Decimal("0")
+_ZERO = Decimal(0)
 _WRITER = "rcb"
 
 
@@ -63,7 +63,7 @@ def effective_limit(state: RcbState, equity: str) -> str:
         return "0"
     base = _dec(state.ratified_base)
     marked = _money(equity)
-    return _text(base if base <= marked else marked)
+    return _text(min(base, marked))
 
 
 def floor_met(state: RcbState) -> bool:
@@ -288,7 +288,7 @@ def _stamp(value: object) -> datetime:
         parsed = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError as exc:
         raise RcbError("timestamp must be UTC") from exc
-    return parsed.replace(tzinfo=timezone.utc)
+    return parsed.replace(tzinfo=UTC)
 
 
 def _money(value: object) -> Decimal:

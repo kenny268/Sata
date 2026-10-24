@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory
 
 from sate_factlog.log import FactLog
 
+from sate_release import sourced
 from sate_release.artifact import (
     Pins,
     seal_authorization,
@@ -30,7 +31,6 @@ from sate_release.sourced import (
     submit_rotate,
     submit_stage,
 )
-import sate_release.sourced as sourced
 
 _ROOT = Path(__file__).resolve().parents[1]
 _NOW = "2026-10-22T21:00:00Z"

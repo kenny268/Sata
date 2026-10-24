@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sate_factlog.log import FactRecord
 
@@ -330,8 +330,8 @@ def _domains(body: dict[str, object]) -> tuple[str, ...]:
 def _seconds(started: str, finished: str) -> int:
     fmt = "%Y-%m-%dT%H:%M:%SZ"
     try:
-        left = datetime.strptime(started, fmt).replace(tzinfo=timezone.utc)
-        right = datetime.strptime(finished, fmt).replace(tzinfo=timezone.utc)
+        left = datetime.strptime(started, fmt).replace(tzinfo=UTC)
+        right = datetime.strptime(finished, fmt).replace(tzinfo=UTC)
     except ValueError as exc:
         raise ReleaseError("rollback timestamps are required", code="provenance") from exc
     return int((right - left).total_seconds())

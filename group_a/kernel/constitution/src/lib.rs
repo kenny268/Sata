@@ -103,7 +103,7 @@ fn decode_fixed<const N: usize>(text: &str) -> Result<[u8; N], Refuse> {
 }
 
 fn decode_hex(text: &str) -> Result<Vec<u8>, Refuse> {
-    if text.len() % 2 != 0 {
+    if !text.len().is_multiple_of(2) {
         return Err(Refuse::Malformed);
     }
     (0..text.len())

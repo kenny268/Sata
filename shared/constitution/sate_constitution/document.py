@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -253,4 +253,4 @@ def _stamp(value: str) -> datetime:
         parsed = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError as exc:
         raise ConstitutionError("timestamp must be UTC", code="malformed") from exc
-    return parsed.replace(tzinfo=timezone.utc)
+    return parsed.replace(tzinfo=UTC)
