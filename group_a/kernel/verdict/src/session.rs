@@ -4,6 +4,11 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use crate::engine::{Decision, Intent, KernelBook, Verdict, decide};
+use crate::kill::{apply_kill, KillLevel};
+use crate::ladder::{escalate, revokes_trading, HaltLevel, HaltTrigger};
+use crate::mode::{transition as mode_transition, ModeEvent};
+use crate::slippage::within_budget;
+use crate::checkin::{self, CheckinChannel};
 use crate::halt::{self, HaltError};
 
 pub const POLL_INTERVAL_SECS: u64 = 5;
@@ -130,6 +135,51 @@ impl Session {
 
     pub fn load_halt(&mut self, path: &Path) -> Result<(), HaltError> {
         halt::load(path, &mut self.book)
+    }
+
+    pub fn record_slippage(&mut self, within_budget: bool) {
+        self.book.slippage_window.record(within_budget);
+    }
+
+    /// PERF measurement on a fill price. An unknown instrument records a breach.
+    pub fn measure_slippage(&mut self, instrument: &str, expected: &str, fill: &str) -> bool {
+        let ok = within_budget(instrument, expected, fill);
+        self.book.slippage_window.record(ok);
+        ok
+    }
+
+    pub fn apply_kill(&mut self, level: KillLevel) -> Result<(), crate::kill::KillError> {
+        let (state, revoke) = apply_kill(&self.book.kill_state, level)?;
+        self.book.kill_state = state;
+        self.book.trading_revoked |= revoke;
+        Ok(())
+    }
+
+    pub fn escalate_halt(&mut self, trigger: HaltTrigger) {
+        let current = HaltLevel::parse(&self.book.halt_level);
+        let next = escalate(current, trigger);
+        self.book.halt_level = next.as_str().to_string();
+        if revokes_trading(next) {
+            self.book.trading_revoked = true;
+        }
+    }
+
+    pub fn transition_mode(&mut self, event: ModeEvent) -> Result<(), crate::mode::ModeError> {
+        let next = mode_transition(&self.book.mode, event)?;
+        self.book.mode = next.to_string();
+        Ok(())
+    }
+
+    pub fn record_checkin(&mut self, channel: CheckinChannel) {
+        checkin::record(&mut self.book.checkin, channel);
+    }
+
+    pub fn set_checkin_away(&mut self, days: u32) -> Result<(), checkin::CheckinError> {
+        checkin::set_away(&mut self.book.checkin, days)
+    }
+
+    pub fn advance_checkin_day(&mut self, day: u64) {
+        self.book.checkin.current_day = day;
     }
 }
 

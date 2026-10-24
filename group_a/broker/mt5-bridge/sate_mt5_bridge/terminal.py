@@ -27,6 +27,7 @@ class MockTerminal:
         equity: str = "",
         margin: str = "",
         currency: str = "",
+        stop_attach_fails: bool = False,
     ) -> None:
         self.login = login
         self.server = server
@@ -48,7 +49,9 @@ class MockTerminal:
         self.fills: list[dict[str, str]] = []
         self.fees: list[dict[str, str]] = []
         self.alive = True
+        self.stop_attach_fails = stop_attach_fails
         self.submits: list[str] = []
+        self.attached_stops: list[str] = []
 
     def handle(self, op: str, payload: dict[str, object]) -> dict[str, object]:
         if not self.alive:
@@ -90,6 +93,18 @@ class MockTerminal:
             return {"idempotency_keys": list(self.submits)}
         if op == "order":
             key = str(payload["idempotency_key"])
+            reduce_only = payload.get("reduce_only") is True
+            stop = payload.get("protective_stop")
+            if not reduce_only and (not isinstance(stop, str) or not stop):
+                raise AdapterError("every entry carries a broker-side stop", code="protective_stop")
+            if self.stop_attach_fails:
+                raise AdapterError("the broker refused the protective stop", code="protective_stop")
             self.submits.append(key)
-            return {"idempotency_key": key, "broker_id": None, "server_time": self.server_time}
+            self.attached_stops.append(stop)
+            return {
+                "idempotency_key": key,
+                "broker_id": None,
+                "server_time": self.server_time,
+                "stop_attached": True,
+            }
         raise AdapterError("the terminal operation is unknown", code="malformed")

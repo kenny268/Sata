@@ -2,7 +2,16 @@
 
 use std::time::Instant;
 
-use crate::decimal::{self, cmp, percent_of};
+use crate::decimal::{self, cmp, floor_to_step, mul_div, on_step, percent_of};
+use crate::slippage::SlippageWindow;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum MinLotPolicy {
+    #[default]
+    Reject,
+    /// Owner-selected path when **A-DEC-01** is resolved. Stays off until then.
+    UseMinLot,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Decision {
@@ -63,6 +72,14 @@ pub struct KernelBook {
     pub drawdown: String,
     pub drawdown_limit: String,
     pub max_risk_pct: String,
+    pub vol_scale: String,
+    pub ramp_factor: String,
+    pub kelly_ceiling: String,
+    pub spread: String,
+    pub commission: String,
+    pub swap: String,
+    pub modeled_slippage: String,
+    pub wednesday_triple: bool,
     pub max_notional_x: String,
     pub open_notional: String,
     pub leverage_used: String,
@@ -76,9 +93,14 @@ pub struct KernelBook {
     pub rate_limited: bool,
     pub require_protective_stop: bool,
     pub min_lot: String,
+    pub lot_step: String,
+    pub min_lot_policy: MinLotPolicy,
+    pub slippage_window: SlippageWindow,
     pub ramp_open: bool,
     pub safe_mode: bool,
     pub market_stale: bool,
+    pub trading_revoked: bool,
+    pub checkin: crate::checkin::CheckinBook,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -93,6 +115,7 @@ pub struct Intent {
     pub protective_stop: String,
     pub fingerprint: String,
     pub reduce_only: bool,
+    pub abstain: bool,
 }
 
 pub fn decide(book: &KernelBook, intent: &Intent, issued_at: &str) -> Verdict {
@@ -125,6 +148,9 @@ fn evaluate(
     if intent.intent_id.is_empty() || intent.group != "A" {
         return reject(checks, "scope", &intent.group, "A", "scope", None);
     }
+    if intent.abstain {
+        return reject(checks, "advisory", "abstain", "zero_view", "abstain", None);
+    }
     if book.rcb_version == 0 || book.constitution_version == 0 {
         return reject(checks, "scope", "0", "pinned", "unbound", None);
     }
@@ -133,8 +159,9 @@ fn evaluate(
         let pin = book.constitution_pin.to_string();
         return reject(checks, "constitution", &loaded, &pin, "constitution", None);
     }
-    if book.kill_state == "K3" {
-        return reject(checks, "halt_kill", "K3", "", "kill", None);
+    if book.kill_state == "K3" || book.trading_revoked {
+        let value = if book.kill_state == "K3" { "K3" } else { "L4" };
+        return reject(checks, "halt_kill", value, "", "revoked", None);
     }
     if intent.reduce_only {
         push(checks, "halt_kill", book.halt_level.as_str(), book.kill_state.as_str(), true);
@@ -158,6 +185,11 @@ fn evaluate(
     if book.market_stale {
         return reject(checks, "freshness", "stale", "fresh", "stale", None);
     }
+    if intent.account_mode == "LIVE" && !intent.reduce_only {
+        if let Some(verdict) = checkin_gate(book, intent, checks) {
+            return verdict;
+        }
+    }
     if let Some(verdict) = mode_gate(book, intent, checks) {
         return verdict;
     }
@@ -168,7 +200,10 @@ fn evaluate(
     if let Some(verdict) = drawdown_gate(book, checks) {
         return verdict;
     }
-    if let Some(verdict) = risk_gate(book, intent, checks) {
+    if let Some(verdict) = sizing_gate(book, intent, checks, &mut size) {
+        return verdict;
+    }
+    if let Some(verdict) = risk_gate(book, intent, checks, &size) {
         return verdict;
     }
     if let Some(verdict) = notional_gate(book, intent, checks, &mut size) {
@@ -183,7 +218,10 @@ fn evaluate(
     if let Some(verdict) = blackout_gate(book, checks) {
         return verdict;
     }
-    if book.halt_level == "L1" {
+    if let Some(verdict) = cost_gate(book, checks) {
+        return verdict;
+    }
+    if book.halt_level == "L1" || book.slippage_window.breached() {
         if let Some(verdict) = halve_for_l1(book, intent, checks, &mut size) {
             return verdict;
         }
@@ -212,6 +250,44 @@ fn fingerprint(
     None
 }
 
+fn checkin_gate(
+    book: &KernelBook,
+    _intent: &Intent,
+    checks: &mut Vec<Check>,
+) -> Option<(Decision, &'static str, String, Option<&'static str>)> {
+    use crate::checkin::{days_without, tier, CheckinTier};
+    let days = days_without(&book.checkin);
+    match tier(&book.checkin) {
+        CheckinTier::Flatten => {
+            return Some(reject(
+                checks,
+                "checkin",
+                &days.to_string(),
+                "flatten",
+                "checkin_flatten",
+                None,
+            ));
+        }
+        CheckinTier::ManageOnly => {
+            return Some(reject(
+                checks,
+                "checkin",
+                &days.to_string(),
+                "manage",
+                "checkin",
+                None,
+            ));
+        }
+        CheckinTier::Reminder => {
+            push(checks, "checkin", &days.to_string(), "reminder", true);
+        }
+        CheckinTier::Ok => {
+            push(checks, "checkin", &days.to_string(), "ok", true);
+        }
+    }
+    None
+}
+
 fn mode_gate(
     book: &KernelBook,
     intent: &Intent,
@@ -220,8 +296,8 @@ fn mode_gate(
     if book.mode == "LIVE-L2" || book.mode == "LIVE-L3" {
         return Some(reject(checks, "mode_universe", &book.mode, "A-DEC-02", "a_dec_02", None));
     }
-    if book.mode == "MANAGE_ONLY" {
-        return Some(reject(checks, "mode_universe", "MANAGE_ONLY", "reduce", "manage_only", None));
+    if book.mode == "MANAGE_ONLY" || book.mode == "HALTED" {
+        return Some(reject(checks, "mode_universe", &book.mode, "reduce", "manage_only", None));
     }
     let live = book.mode.starts_with("LIVE");
     if (live && intent.account_mode != "LIVE") || (!live && intent.account_mode != "SIM") {
@@ -282,19 +358,97 @@ fn drawdown_gate(
     None
 }
 
+fn sizing_gate(
+    book: &KernelBook,
+    intent: &Intent,
+    checks: &mut Vec<Check>,
+    size: &mut String,
+) -> Option<(Decision, &'static str, String, Option<&'static str>)> {
+    let base = effective_quantity(intent, size);
+    if !book.min_lot.is_empty()
+        && cmp(&base, &book.min_lot) == Some(std::cmp::Ordering::Less)
+        && book.min_lot_policy == MinLotPolicy::UseMinLot
+    {
+        *size = book.min_lot.clone();
+        push(checks, "sizing", &base, &book.min_lot, true);
+        return None;
+    }
+    if book.lot_step.is_empty() {
+        return None;
+    }
+    let Some(floored) = floor_to_step(&base, &book.lot_step) else {
+        return Some(reject(checks, "sizing", &base, &book.lot_step, "malformed", None));
+    };
+    if floored != base {
+        if below_lot(book, &floored) {
+            if book.min_lot_policy == MinLotPolicy::UseMinLot && !book.min_lot.is_empty() {
+                *size = book.min_lot.clone();
+                push(checks, "sizing", &base, &book.min_lot, true);
+                return None;
+            }
+            return Some(reject(
+                checks,
+                "sizing",
+                &floored,
+                &book.min_lot,
+                "untradeable_at_this_capital",
+                None,
+            ));
+        }
+        *size = floored;
+    } else if !on_step(&base, &book.lot_step) {
+        return Some(reject(checks, "sizing", &base, &book.lot_step, "malformed", None));
+    }
+    push(checks, "sizing", effective_quantity(intent, size).as_str(), &book.lot_step, true);
+    None
+}
+
 fn risk_gate(
     book: &KernelBook,
     intent: &Intent,
     checks: &mut Vec<Check>,
+    size: &str,
 ) -> Option<(Decision, &'static str, String, Option<&'static str>)> {
-    let Some(budget) = percent_of(&book.equity, &book.max_risk_pct) else {
+    let Some(base_pct) = mul_div(&book.max_risk_pct, &book.vol_scale, "1") else {
         return Some(reject(checks, "risk_budget", &book.max_risk_pct, "decimal", "malformed", None));
+    };
+    let Some(scaled_pct) = mul_div(&base_pct, &book.ramp_factor, "1") else {
+        return Some(reject(checks, "risk_budget", &book.ramp_factor, "decimal", "malformed", None));
+    };
+    let Some(percent_budget) = percent_of(&book.equity, &scaled_pct) else {
+        return Some(reject(checks, "risk_budget", &scaled_pct, "decimal", "malformed", None));
+    };
+    let budget = match kelly_cap(book, &percent_budget) {
+        Ok(value) => value,
+        Err(()) => return Some(reject(checks, "risk_budget", &book.kelly_ceiling, &percent_budget, "malformed", None)),
     };
     if cmp(&intent.risk_amount, &budget) == Some(std::cmp::Ordering::Greater) {
         return Some(reject(checks, "risk_budget", &intent.risk_amount, &budget, "risk_budget", None));
     }
-    if !book.min_lot.is_empty() && cmp(&intent.quantity, &book.min_lot) == Some(std::cmp::Ordering::Less) {
-        return Some(reject(checks, "risk_budget", &intent.quantity, &book.min_lot, "untradeable_at_this_capital", None));
+    let quantity = effective_quantity(intent, size);
+    if !book.min_lot.is_empty() && cmp(&quantity, &book.min_lot) == Some(std::cmp::Ordering::Less) {
+        if book.min_lot_policy == MinLotPolicy::UseMinLot && !size.is_empty() {
+            push(checks, "risk_budget", &quantity, &book.min_lot, true);
+            return None;
+        }
+        if book.min_lot_policy == MinLotPolicy::UseMinLot {
+            return Some(reject(
+                checks,
+                "risk_budget",
+                &quantity,
+                &book.min_lot,
+                "untradeable_at_this_capital",
+                None,
+            ));
+        }
+        return Some(reject(
+            checks,
+            "risk_budget",
+            &quantity,
+            &book.min_lot,
+            "untradeable_at_this_capital",
+            None,
+        ));
     }
     push(checks, "risk_budget", &intent.risk_amount, &budget, true);
     None
@@ -367,6 +521,38 @@ fn margin_gate(
     None
 }
 
+/// Kelly is an upper reference. A higher Kelly figure never raises the constitution budget.
+fn kelly_cap(book: &KernelBook, budget: &str) -> Result<String, ()> {
+    if book.kelly_ceiling.is_empty() {
+        return Ok(budget.to_string());
+    }
+    match cmp(&book.kelly_ceiling, budget) {
+        Some(std::cmp::Ordering::Less) => Ok(book.kelly_ceiling.clone()),
+        Some(_) => Ok(budget.to_string()),
+        None => Err(()),
+    }
+}
+
+fn cost_gate(
+    book: &KernelBook,
+    checks: &mut Vec<Check>,
+) -> Option<(Decision, &'static str, String, Option<&'static str>)> {
+    for value in [&book.spread, &book.commission, &book.swap, &book.modeled_slippage] {
+        if decimal::parse(value).is_none() {
+            return Some(reject(checks, "cost_model", value, "modeled", "cost_model", None));
+        }
+    }
+    if book.wednesday_triple {
+        let Some(triple) = mul_div(&book.swap, "3", "1") else {
+            return Some(reject(checks, "cost_model", &book.swap, "3", "cost_model", None));
+        };
+        push(checks, "cost_model", &triple, "wednesday_triple", true);
+        return None;
+    }
+    push(checks, "cost_model", &book.spread, "modeled", true);
+    None
+}
+
 fn blackout_gate(
     book: &KernelBook,
     checks: &mut Vec<Check>,
@@ -401,6 +587,14 @@ fn halve_for_l1(
 
 fn below_lot(book: &KernelBook, quantity: &str) -> bool {
     quantity == "0" || (!book.min_lot.is_empty() && cmp(quantity, &book.min_lot) == Some(std::cmp::Ordering::Less))
+}
+
+fn effective_quantity(intent: &Intent, size: &str) -> String {
+    if size.is_empty() {
+        intent.quantity.clone()
+    } else {
+        size.to_string()
+    }
 }
 
 fn implied_notional(intent: &Intent, size: &str) -> Option<String> {

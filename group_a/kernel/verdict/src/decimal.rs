@@ -70,3 +70,36 @@ pub fn sub(left: &str, right: &str) -> Option<String> {
     }
     Some(format(difference))
 }
+
+/// Round `value` down to the nearest multiple of `step`.
+pub fn floor_to_step(value: &str, step: &str) -> Option<String> {
+    let value_units = parse(value)?;
+    let step_units = parse(step)?;
+    if step_units == 0 {
+        return None;
+    }
+    Some(format((value_units / step_units) * step_units))
+}
+
+pub fn on_step(value: &str, step: &str) -> bool {
+    let (Some(value_units), Some(step_units)) = (parse(value), parse(step)) else {
+        return false;
+    };
+    if step_units == 0 {
+        return false;
+    }
+    value_units % step_units == 0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{floor_to_step, on_step};
+
+    #[test]
+    fn floor_to_step_rounds_down() {
+        assert_eq!(floor_to_step("1.13", "0.25").as_deref(), Some("1"));
+        assert_eq!(floor_to_step("1.25", "0.25").as_deref(), Some("1.25"));
+        assert!(on_step("1.25", "0.25"));
+        assert!(!on_step("1.13", "0.25"));
+    }
+}

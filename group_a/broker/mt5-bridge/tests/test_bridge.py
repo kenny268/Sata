@@ -29,6 +29,7 @@ def _terminal(
         equity: str = "",
         margin: str = "",
         currency: str = "",
+        stop_attach_fails: bool = False,
     ) -> MockTerminal:
     return MockTerminal(
         login=login,
@@ -47,11 +48,15 @@ def _terminal(
         equity=equity,
         margin=margin,
         currency=currency,
+        stop_attach_fails=stop_attach_fails,
     )
 
 
 def _grant() -> dict[str, object]:
     return {"group": "A", "injected": True}
+
+
+_STOP = "1.0700"
 
 
 def _open(bridge: Bridge, login: str = "10001") -> str:
@@ -73,8 +78,12 @@ class BridgeTests(unittest.TestCase):
             side="BUY",
             quantity="1",
             reduce_only=False,
+            protective_stop=_STOP,
         )
         self.assertEqual(order.state, "placeholder")
+        self.assertTrue(order.stop_attached)
+        self.assertEqual(order.protective_stop, _STOP)
+        self.assertEqual(terminal.attached_stops, [_STOP])
         self.assertIsNone(order.broker_id)
         self.assertEqual(order.server_time, "2026-10-22T21:00:00Z")
         self.assertEqual(terminal.submits, ["ord-1"])
@@ -85,6 +94,7 @@ class BridgeTests(unittest.TestCase):
             side="BUY",
             quantity="1",
             reduce_only=False,
+            protective_stop=_STOP,
         )
         self.assertIs(again, order)
         self.assertEqual(terminal.submits, ["ord-1"])
@@ -96,6 +106,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity="1",
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(rejected.exception.code, "verdict")
         bridge.close()
@@ -112,6 +123,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity="1",
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(blocked.exception.code, "state")
         self.assertEqual(bridge.terminal.submits, [])
@@ -128,6 +140,7 @@ class BridgeTests(unittest.TestCase):
             side="SELL",
             quantity="1",
             reduce_only=False,
+            protective_stop=_STOP,
         )
         bridge.crash()
         self.assertEqual(bridge.state, "UNAVAILABLE")
@@ -153,6 +166,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity="1",
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(blocked.exception.code, "state")
         stale.close()
@@ -167,6 +181,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity="1",
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(settlement.exception.code, "settlement")
         unknown.close()
@@ -252,6 +267,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity="1",
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(blocked.exception.code, "state")
         terminal.login = "10001"
@@ -274,6 +290,7 @@ class BridgeTests(unittest.TestCase):
             side="BUY",
             quantity="1",
             reduce_only=False,
+            protective_stop=_STOP,
         )
         bridge.crash()
         terminal.alive = True
@@ -287,6 +304,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity="1",
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(blocked.exception.code, "state")
         self.assertEqual(terminal.submits, ["ord-1", "extra"])
@@ -308,6 +326,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity="1",
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(missing.exception.code, "spec")
         flatten = bridge.place_placeholder(
@@ -354,6 +373,7 @@ class BridgeTests(unittest.TestCase):
             side="BUY",
             quantity="1",
             reduce_only=False,
+            protective_stop=_STOP,
         )
         self.assertIs(bridge.order_status("ord-1"), order)
         self.assertIsNone(bridge.order_status("ord-1").broker_id)
@@ -365,6 +385,7 @@ class BridgeTests(unittest.TestCase):
                 side="BUY",
                 quantity=1.0,
                 reduce_only=False,
+                protective_stop=_STOP,
             )
         self.assertEqual(amount.exception.code, "malformed")
         setattr(terminal, "equity", 10.0)
@@ -395,6 +416,86 @@ class BridgeTests(unittest.TestCase):
         quiet.close()
         limited.close()
         refused.close()
+
+    def test_bat_stop_attachment_is_verified_on_the_demo_terminal(self) -> None:
+        terminal = _terminal()
+        bridge = Bridge(terminal)
+        _open(bridge)
+        order = bridge.place_placeholder(
+            verdict="Allow",
+            idempotency_key="bat-1",
+            instrument="EURUSD",
+            side="BUY",
+            quantity="1",
+            reduce_only=False,
+            protective_stop=_STOP,
+        )
+        self.assertTrue(order.stop_attached)
+        self.assertEqual(terminal.attached_stops, [_STOP])
+        bridge.close()
+
+    def test_a_missing_stop_is_refused_before_the_terminal(self) -> None:
+        bridge = Bridge(_terminal())
+        _open(bridge)
+        with self.assertRaises(AdapterError) as missing:
+            bridge.place_placeholder(
+                verdict="Allow",
+                idempotency_key="ord-1",
+                instrument="EURUSD",
+                side="BUY",
+                quantity="1",
+                reduce_only=False,
+            )
+        self.assertEqual(missing.exception.code, "protective_stop")
+        self.assertEqual(bridge.terminal.submits, [])
+        bridge.close()
+
+    def test_demo_risk_orders_never_submit_without_a_verified_stop(self) -> None:
+        terminal = _terminal()
+        bridge = Bridge(terminal)
+        _open(bridge)
+        for index in range(3):
+            order = bridge.place_placeholder(
+                verdict="Allow",
+                idempotency_key=f"ord-{index}",
+                instrument="EURUSD",
+                side="BUY",
+                quantity="1",
+                reduce_only=False,
+                protective_stop=_STOP,
+            )
+            self.assertTrue(order.stop_attached)
+        self.assertEqual(len(terminal.submits), 3)
+        self.assertEqual(len(terminal.attached_stops), 3)
+        self.assertEqual(set(terminal.attached_stops), {_STOP})
+        bridge.close()
+
+    def test_a_broker_stop_failure_does_not_open(self) -> None:
+        bridge = Bridge(_terminal(stop_attach_fails=True))
+        _open(bridge)
+        with self.assertRaises(AdapterError) as failed:
+            bridge.place_placeholder(
+                verdict="Allow",
+                idempotency_key="ord-1",
+                instrument="EURUSD",
+                side="BUY",
+                quantity="1",
+                reduce_only=False,
+                protective_stop=_STOP,
+            )
+        self.assertEqual(failed.exception.code, "protective_stop")
+        self.assertEqual(bridge.terminal.submits, [])
+        bridge.close()
+
+    def test_monitor_exports_bridge_state(self) -> None:
+        from sate_mt5_bridge.monitor import observation_from_bridge
+
+        bridge = Bridge(_terminal(), channel="SIM")
+        self.assertEqual(_open(bridge), "HEALTHY")
+        obs = observation_from_bridge(bridge)
+        self.assertEqual(obs["adapter_state"], "HEALTHY")
+        self.assertEqual(obs["group_scope"], "A")
+        bridge.close()
 
 
 if __name__ == "__main__":

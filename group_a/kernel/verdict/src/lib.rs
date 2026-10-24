@@ -1,15 +1,34 @@
 //! KERNEL-A verdict path. Checks run in §6.4 order and short-circuit.
 //! Latency is recorded. The no-heap p99 target is not claimed from this path.
 
+mod checkin;
 mod decimal;
 mod engine;
 mod halt;
+mod kill;
+mod ladder;
+mod mode;
 mod session;
+mod slippage;
 
 pub use decimal::{add, cmp, sub};
-pub use engine::{Check, Decision, Intent, KernelBook, Verdict, KERNEL_VERSION, decide};
+pub use engine::{Check, Decision, Intent, KernelBook, MinLotPolicy, Verdict, KERNEL_VERSION, decide};
 pub use halt::{read as read_halt, HaltError, HaltRecord};
 pub use session::{MockAdapter, PollHook, Session, POLL_INTERVAL_SECS, STAGING_SECS, approved};
+pub use slippage::{budget as slippage_budget, within_budget, SlippageWindow, WINDOW as SLIPPAGE_WINDOW};
+pub use kill::{apply_kill, blocks_all_trading as kill_blocks_all, blocks_new_risk as kill_blocks_new, KillError, KillLevel};
+pub use ladder::{blocks_new_risk as halt_blocks_new, escalate, revokes_trading, HaltLevel, HaltTrigger};
+pub use mode::{badge as mode_badge, blocks_new_risk as mode_blocks_new, transition as mode_transition, ModeError, ModeEvent};
+pub use checkin::{
+    days_without as checkin_days_without, record as record_checkin, set_away as set_checkin_away, tier as checkin_tier,
+    CheckinBook, CheckinChannel, CheckinError, CheckinTier,
+};
+
+#[cfg(test)]
+mod checkin_ladder_tests;
+
+#[cfg(test)]
+mod halt_ladder_tests;
 
 #[cfg(test)]
 mod order_tests;

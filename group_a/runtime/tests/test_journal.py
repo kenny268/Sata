@@ -14,7 +14,12 @@ from sate_factlog.log import FactLog
 from sate_runtime.journal import (
     GateError,
     persist_credential_use,
+    persist_execution_failure,
+    persist_check_in,
+    persist_halt_state,
+    persist_kill_command,
     persist_lifecycle,
+    persist_mode_transition,
     persist_reconciliation,
     persist_verdict,
     submit_persisted,
@@ -215,6 +220,130 @@ class JournalTests(unittest.TestCase):
                 correlation_id="recon-1",
             )
         self.assertEqual(caught.exception.code, "halt")
+
+    def test_a_stop_failure_is_stored_as_a_failure_event(self) -> None:
+        log = _log()
+        persist_execution_failure(
+            log,
+            {
+                "kind": "protective_stop",
+                "intent_id": "i-1",
+                "correlation_id": "A:i-1",
+                "reason": "the broker refused the protective stop",
+                "code": "protective_stop",
+            },
+            event_id="f-1",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="A:i-1",
+        )
+        stored = log.poll(after_seq=0, group_scope="A", reader_id="kernel-a")
+        self.assertEqual(stored[0].event_type, "failure")
+        self.assertEqual(stored[0].payload["code"], "protective_stop")
+        leaked = {
+            "kind": "protective_stop",
+            "intent_id": "i-1",
+            "correlation_id": "A:i-1",
+            "reason": "x",
+            "code": "protective_stop",
+            "password": "nope",
+        }
+        with self.assertRaises(GateError) as caught:
+            persist_execution_failure(
+                log,
+                leaked,
+                event_id="f-2",
+                occurred_at=_NOW,
+                recorded_at=_NOW,
+                correlation_id="A:i-1",
+            )
+        self.assertEqual(caught.exception.code, "secret")
+
+    def test_check_in_events_are_auditable(self) -> None:
+        log = _log()
+        persist_check_in(
+            log,
+            {
+                "channel": "telegram_alive",
+                "strength": "weak",
+                "days_without": "8",
+                "away_days": "",
+            },
+            event_id="c-1",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="chk-1",
+        )
+        rows = log.poll(after_seq=0, group_scope="A", reader_id="kernel-a")
+        self.assertEqual(rows[0].event_type, "check_in")
+
+    def test_kill_and_mode_transitions_are_auditable(self) -> None:
+        log = _log()
+        persist_kill_command(
+            log,
+            {
+                "command_id": "k-1",
+                "scope": "A",
+                "kill_level": "K2",
+                "channel": "cli",
+                "identity": "owner",
+                "open_positions": "2",
+            },
+            event_id="h-1",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="k-1",
+        )
+        persist_mode_transition(
+            log,
+            {
+                "from_mode": "LIVE-L1",
+                "to_mode": "MANAGE_ONLY",
+                "reason": "live_to_sim",
+                "channel": "web",
+            },
+            event_id="m-1",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="mode-1",
+        )
+        persist_halt_state(
+            log,
+            {
+                "command_id": "k-1",
+                "scope": "A",
+                "state": "HALT_CONFIRMED_A",
+                "kill_level": "K2",
+                "reason": "drill",
+            },
+            event_id="h-2",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="k-1",
+        )
+        types = [row.event_type for row in log.poll(after_seq=0, group_scope="A", reader_id="kernel-a")]
+        self.assertEqual(types, ["halt", "state_transition", "halt"])
+
+    def test_stop_failure_matches_phase14_exit_path(self) -> None:
+        log = _log()
+        persist_execution_failure(
+            log,
+            {
+                "kind": "protective_stop",
+                "intent_id": "i-demo",
+                "correlation_id": "A:i-demo",
+                "reason": "the broker refused the protective stop",
+                "code": "protective_stop",
+            },
+            event_id="f-demo",
+            occurred_at=_NOW,
+            recorded_at=_NOW,
+            correlation_id="A:i-demo",
+        )
+        rows = log.poll(after_seq=0, group_scope="A", reader_id="kernel-a")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].event_type, "failure")
+        self.assertIsNone(log.verify(reader_id="kernel-a"))
 
 
 if __name__ == "__main__":

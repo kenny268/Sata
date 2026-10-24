@@ -113,6 +113,7 @@ pub struct Order {
     pub filled: String,
     pub remainder: String,
     pub protective_stop: String,
+    pub stop_quantity: String,
     pub reduce_only: bool,
     pub state: OrderState,
     pub broker_id: Option<String>,
@@ -171,6 +172,7 @@ impl Book {
             filled: "0".to_string(),
             remainder: quantity.clone(),
             protective_stop: request.protective_stop.clone(),
+            stop_quantity: quantity.clone(),
             reduce_only: request.reduce_only,
             state: OrderState::New,
             broker_id: None,
@@ -284,6 +286,9 @@ impl Book {
         };
         let kind = if state == OrderState::Filled { "fill" } else { "partial" };
         self.write(intent_id, state, &filled, &remainder, None, false);
+        if let Some(index) = self.index(intent_id) {
+            self.orders[index].stop_quantity = filled.clone();
+        }
         self.record(intent_id, fill_id, kind, quantity, server_time);
         self.order(intent_id).cloned().ok_or(OmsError::Record)
     }

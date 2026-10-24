@@ -1,0 +1,42 @@
+{
+  "phase": 14,
+  "exit_criteria": {
+    "demo_zero_entries_without_verified_stop": true,
+    "stop_failure_reject_and_fact_log": true,
+    "kernel_enforcement_layer": true,
+    "rolling_slippage_window": true,
+    "scenario_harness_ts01_ts13": true,
+    "perf_slippage_measurement": true,
+    "bat_stop_attachment": true,
+    "kelly_upper_reference_only": true,
+    "cost_model_enforced": true
+  },
+  "requirements": [
+    "A-EXE-01",
+    "A-EXE-02",
+    "A-EXE-03",
+    "A-EXE-04",
+    "A-SZ-01",
+    "A-SZ-02",
+    "A-SZ-03",
+    "A-SZ-04",
+    "A-KRN-04"
+  ],
+  "backlog_complete": ["A-P0-13"],
+  "not_this_phase": ["A-P0-14", "A-DEC-01"],
+  "a_dec_01_blocked": true,
+  "a_p0_21_blocked": true,
+  "slippage_measured_live": false,
+  "demo_entries_without_verified_stop": false,
+  "evidence": [
+    "group_a/kernel/verdict/src/engine.rs",
+    "group_a/kernel/verdict/src/decimal.rs",
+    "group_a/kernel/verdict/src/slippage.rs",
+    "group_a/kernel/verdict/src/order_tests.rs",
+    "group_a/kernel/oms/src/tests.rs",
+    "shared/ci/tests/test_phase14_tracker.py",
+    "group_a/broker/mt5-bridge/sate_mt5_bridge/bridge.py",
+    "group_a/broker/mt5-bridge/sate_mt5_bridge/terminal.py",
+    "group_a/runtime/sate_runtime/journal.py"
+  ]
+}

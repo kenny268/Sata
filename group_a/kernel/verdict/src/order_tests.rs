@@ -1,7 +1,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{
-    Decision, Intent, KernelBook, PollHook, Session, decide, POLL_INTERVAL_SECS, STAGING_SECS,
+    Decision, Intent, KernelBook, MinLotPolicy, PollHook, Session, SlippageWindow, decide, POLL_INTERVAL_SECS,
+    STAGING_SECS,
 };
 
 fn book() -> KernelBook {
@@ -21,6 +22,14 @@ fn book() -> KernelBook {
         drawdown: "0".to_string(),
         drawdown_limit: "100".to_string(),
         max_risk_pct: "0.5".to_string(),
+        vol_scale: "1".to_string(),
+        ramp_factor: "1".to_string(),
+        kelly_ceiling: String::new(),
+        spread: "0".to_string(),
+        commission: "0".to_string(),
+        swap: "0".to_string(),
+        modeled_slippage: "0".to_string(),
+        wednesday_triple: false,
         max_notional_x: "3".to_string(),
         open_notional: "0".to_string(),
         leverage_used: "1".to_string(),
@@ -34,9 +43,14 @@ fn book() -> KernelBook {
         rate_limited: false,
         require_protective_stop: true,
         min_lot: String::new(),
+        lot_step: String::new(),
+        min_lot_policy: MinLotPolicy::Reject,
+        slippage_window: SlippageWindow::default(),
         ramp_open: true,
         safe_mode: false,
         market_stale: false,
+        trading_revoked: false,
+        checkin: Default::default(),
     }
 }
 
@@ -52,6 +66,7 @@ fn intent() -> Intent {
         protective_stop: "1.08".to_string(),
         fingerprint: "fp-1".to_string(),
         reduce_only: false,
+        abstain: false,
     }
 }
 
@@ -76,6 +91,7 @@ fn an_entry_inside_the_loaded_limits_is_allowed() {
             "concentration",
             "margin",
             "blackout_swap",
+            "cost_model",
             "rate_limit",
         ]
     );
@@ -106,7 +122,7 @@ fn kill_blocks_before_a_later_risk_check() {
     let mut flatten = intent();
     flatten.reduce_only = true;
     let verdict = decide(&state, &flatten, "2026-10-22T21:00:00Z");
-    assert_eq!(verdict.reason, "kill");
+    assert_eq!(verdict.reason, "revoked");
     assert_eq!(verdict.checks.len(), 1);
 }
 
@@ -254,7 +270,7 @@ fn rcb_is_checked_before_drawdown() {
 }
 
 #[test]
-fn stale_market_data_blocks_an_entry_and_still_allows_a_flatten() {
+fn ts10_stale_market_data_blocks_an_entry_and_still_allows_a_flatten() {
     let mut state = book();
     state.market_stale = true;
     assert_eq!(decide(&state, &intent(), "2026-10-22T21:00:00Z").reason, "stale");
@@ -334,6 +350,157 @@ fn latency_is_recorded_without_claiming_the_p99_target() {
     let verdict = decide(&book(), &intent(), "2026-10-22T21:00:00Z");
     let _baseline_us = verdict.latency_us;
     assert!(verdict.issued_at.ends_with('Z'));
+}
+
+#[test]
+fn ts04_rejects_when_min_lot_exceeds_the_budget() {
+    let mut state = book();
+    state.min_lot = "2".to_string();
+    state.lot_step = "0.01".to_string();
+    let mut order = intent();
+    order.quantity = "1".to_string();
+    assert_eq!(decide(&state, &order, "2026-10-22T21:00:00Z").reason, "untradeable_at_this_capital");
+}
+
+#[test]
+fn lot_step_floors_the_size_down_and_never_rounds_up() {
+    let mut state = book();
+    state.lot_step = "0.25".to_string();
+    state.min_lot = "0.25".to_string();
+    let mut order = intent();
+    order.quantity = "1.13".to_string();
+    let verdict = decide(&state, &order, "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::AllowWithSize);
+    assert_eq!(verdict.size, "1");
+}
+
+#[test]
+fn a_dec_01_use_min_lot_policy_is_implemented_but_not_default() {
+    let mut state = book();
+    state.min_lot = "1.25".to_string();
+    state.lot_step = "0.25".to_string();
+    state.min_lot_policy = MinLotPolicy::UseMinLot;
+    let mut order = intent();
+    order.quantity = "1".to_string();
+    let verdict = decide(&state, &order, "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::AllowWithSize);
+    assert_eq!(verdict.size, "1.25");
+}
+
+#[test]
+fn slippage_budget_breach_halves_like_l1() {
+    let mut state = book();
+    state.slippage_window.record(false);
+    let verdict = decide(&state, &intent(), "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::AllowWithSize);
+    assert_eq!(verdict.size, "0.5");
+}
+
+#[test]
+fn vol_scale_and_ramp_factor_shrink_the_risk_budget() {
+    let mut state = book();
+    state.vol_scale = "0.5".to_string();
+    state.ramp_factor = "0.5".to_string();
+    let mut order = intent();
+    order.risk_amount = "1.2".to_string();
+    assert_eq!(decide(&state, &order, "2026-10-22T21:00:00Z").decision, Decision::Allow);
+    order.risk_amount = "1.3".to_string();
+    assert_eq!(decide(&state, &order, "2026-10-22T21:00:00Z").reason, "risk_budget");
+}
+
+#[test]
+fn ts01_allow_is_journalled_before_submit_and_keeps_the_stop() {
+    let mut session = Session::open(book(), 1);
+    let verdict = session.handle(&intent(), "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::Allow);
+    assert!(!intent().protective_stop.is_empty());
+    assert!(session.submit_persisted(&verdict).is_err());
+    let mut stored = verdict;
+    stored.persisted = true;
+    session.submit_persisted(&stored).unwrap();
+    assert_eq!(session.adapter.submits, vec!["i-1".to_string()]);
+}
+
+#[test]
+fn ts02_a_missing_advisory_does_not_block() {
+    let verdict = decide(&book(), &intent(), "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::Allow);
+    assert!(verdict.reason.is_empty());
+}
+
+#[test]
+fn ts03_abstain_does_not_open() {
+    let mut order = intent();
+    order.abstain = true;
+    let verdict = decide(&book(), &order, "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::Reject);
+    assert_eq!(verdict.reason, "abstain");
+    assert!(!verdict.decision.allows_broker_submit());
+}
+
+#[test]
+fn ts07_rate_limit_throttles() {
+    let mut state = book();
+    state.rate_limited = true;
+    let verdict = decide(&state, &intent(), "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::Throttle);
+    assert_eq!(verdict.reason, "rate_limit");
+}
+
+#[test]
+fn ts08_news_blackout_rejects() {
+    let mut state = book();
+    state.news_blackout = true;
+    assert_eq!(decide(&state, &intent(), "2026-10-22T21:00:00Z").reason, "blackout");
+}
+
+#[test]
+fn ts11_a_duplicate_intent_keeps_the_first_outcome() {
+    let mut session = Session::open(book(), 1);
+    let first = session.handle(&intent(), "2026-10-22T21:00:00Z");
+    let second = session.handle(&intent(), "2026-10-22T21:00:01Z");
+    assert_eq!(first.decision, second.decision);
+    assert_eq!(session.verdict_count(), 1);
+}
+
+#[test]
+fn kelly_can_only_tighten_the_risk_budget() {
+    let mut loose = book();
+    loose.kelly_ceiling = "100".to_string();
+    let mut order = intent();
+    order.risk_amount = "6".to_string();
+    assert_eq!(decide(&loose, &order, "2026-10-22T21:00:00Z").reason, "risk_budget");
+    let mut tight = book();
+    tight.kelly_ceiling = "1".to_string();
+    order.risk_amount = "2".to_string();
+    assert_eq!(decide(&tight, &order, "2026-10-22T21:00:00Z").reason, "risk_budget");
+    order.risk_amount = "1".to_string();
+    assert_eq!(decide(&tight, &order, "2026-10-22T21:00:00Z").decision, Decision::Allow);
+}
+
+#[test]
+fn an_unmodeled_cost_is_rejected_and_wednesday_triple_is_recorded() {
+    let mut missing = book();
+    missing.spread.clear();
+    assert_eq!(decide(&missing, &intent(), "2026-10-22T21:00:00Z").reason, "cost_model");
+    let mut triple = book();
+    triple.wednesday_triple = true;
+    triple.swap = "0.1".to_string();
+    let verdict = decide(&triple, &intent(), "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::Allow);
+    let cost = verdict.checks.iter().find(|check| check.name == "cost_model").unwrap();
+    assert_eq!(cost.limit, "wednesday_triple");
+    assert_eq!(cost.value, "0.3");
+}
+
+#[test]
+fn a_measured_fill_outside_the_eurusd_budget_halves_the_next_entry() {
+    let mut session = Session::open(book(), 1);
+    assert!(session.measure_slippage("EURUSD", "1.0850", "1.08504"));
+    assert!(!session.measure_slippage("EURUSD", "1.0850", "1.0852"));
+    let verdict = session.handle(&intent(), "2026-10-22T21:00:00Z");
+    assert_eq!(verdict.decision, Decision::AllowWithSize);
+    assert_eq!(verdict.size, "0.5");
 }
 
 fn unique() -> u128 {

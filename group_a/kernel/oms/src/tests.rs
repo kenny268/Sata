@@ -342,6 +342,7 @@ fn a_restored_order_is_not_submitted_again() {
         filled: "0".to_string(),
         remainder: "1".to_string(),
         protective_stop: "1.08".to_string(),
+        stop_quantity: "1".to_string(),
         reduce_only: false,
         state: OrderState::Submitted,
         broker_id: None,
@@ -353,4 +354,29 @@ fn a_restored_order_is_not_submitted_again() {
     assert_eq!(order.state, OrderState::Submitted);
     assert_eq!(order.correlation_id, "A:i-1");
     assert!(broker.submits.is_empty());
+}
+
+#[test]
+fn ts13_risk_increasing_submit_requires_a_protective_stop() {
+    let mut book = Book::default();
+    let mut broker = Fake::new();
+    let approved = verdict("i-1", Decision::Allow, "", true);
+    let mut missing = request("i-1");
+    missing.protective_stop.clear();
+    assert_eq!(book.submit(&approved, &missing, &mut broker), Err(OmsError::Record));
+    assert!(broker.submits.is_empty());
+}
+
+#[test]
+fn ts12_partial_fill_keeps_the_protective_stop_on_the_order() {
+    let mut book = Book::default();
+    let mut broker = Fake::new();
+    broker.submit_script.push(ack(Some("T-1")));
+    let approved = verdict("i-1", Decision::Allow, "", true);
+    book.submit(&approved, &request("i-1"), &mut broker).unwrap();
+    let partial = book.apply_fill("i-1", "f-1", "0.4", "2026-10-22T21:00:01Z").unwrap();
+    assert_eq!(partial.state, OrderState::Partial);
+    assert_eq!(partial.protective_stop, "1.08");
+    assert_eq!(partial.stop_quantity, "0.4");
+    assert_eq!(partial.filled, "0.4");
 }

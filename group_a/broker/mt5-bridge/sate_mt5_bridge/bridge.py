@@ -36,8 +36,10 @@ class Placeholder:
     quantity: str
     verdict: str
     server_time: str
+    protective_stop: str = ""
     broker_id: None = None
     state: str = "placeholder"
+    stop_attached: bool = False
 
 
 class Bridge:
@@ -163,6 +165,7 @@ class Bridge:
         side: str,
         quantity: object,
         reduce_only: bool,
+        protective_stop: str = "",
     ) -> Placeholder:
         if self.state != "HEALTHY":
             raise AdapterError("the adapter is not healthy", code="state")
@@ -175,6 +178,8 @@ class Bridge:
             return existing
         if not reduce_only and not self.spec.complete:
             raise AdapterError("the contract spec has not been reported", code="spec")
+        if not reduce_only and not protective_stop:
+            raise AdapterError("every entry carries a broker-side stop", code="protective_stop")
         if not self.orders_enabled:
             raise AdapterError("an unknown settlement rule stays disabled", code="settlement")
         amount = _money(quantity)
@@ -192,6 +197,8 @@ class Bridge:
                     "side": side,
                     "quantity": amount,
                     "verdict": verdict,
+                    "protective_stop": protective_stop,
+                    "reduce_only": reduce_only,
                 },
             )
         except AdapterError as exc:
@@ -202,6 +209,9 @@ class Bridge:
         if not isinstance(server_time, str) or not server_time:
             self.state = "UNVERIFIED"
             raise AdapterError("broker events carry a server time", code="malformed")
+        stop_attached = reply.get("stop_attached") is True
+        if not reduce_only and not stop_attached:
+            raise AdapterError("the broker-side stop was not verified", code="protective_stop")
         order = Placeholder(
             idempotency_key=idempotency_key,
             instrument=instrument,
@@ -209,6 +219,8 @@ class Bridge:
             quantity=amount,
             verdict=verdict,
             server_time=server_time,
+            protective_stop=protective_stop,
+            stop_attached=stop_attached,
         )
         self.orders[idempotency_key] = order
         return order

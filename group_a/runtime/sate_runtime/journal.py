@@ -128,6 +128,96 @@ def persist_reconciliation(log: FactLog, observation: dict[str, object], **ident
     )
 
 
+_FAILURE_KEYS = ("kind", "intent_id", "correlation_id", "reason", "code")
+_FAILURE_KINDS = frozenset({"protective_stop"})
+
+
+def persist_execution_failure(log: FactLog, failure: dict[str, object], **identity: str) -> None:
+    if set(failure) != set(_FAILURE_KEYS) or any(key in _SECRET_KEYS for key in failure):
+        raise GateError("execution failure cannot carry a secret", code="secret")
+    kind = str(failure["kind"])
+    if kind not in _FAILURE_KINDS:
+        raise GateError("execution failure is incomplete", code="record")
+    for key in _FAILURE_KEYS:
+        value = failure[key]
+        if not isinstance(value, str) or value == "":
+            raise GateError("execution failure is incomplete", code="record")
+    if failure["correlation_id"] != f"A:{failure['intent_id']}":
+        raise GateError("the order correlation is the idempotency key", code="record")
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type="failure",
+        group_scope="A",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(failure["correlation_id"]),
+        writer_id="kernel-a",
+        payload={key: failure[key] for key in _FAILURE_KEYS},
+    )
+
+
+_KILL_KEYS = ("command_id", "scope", "kill_level", "channel", "identity", "open_positions")
+_MODE_KEYS = ("from_mode", "to_mode", "reason", "channel")
+_HALT_KEYS = ("command_id", "scope", "state", "kill_level", "reason")
+_CHECKIN_KEYS = ("channel", "strength", "days_without", "away_days")
+
+
+def persist_kill_command(log: FactLog, command: dict[str, object], **identity: str) -> None:
+    payload = _kill_command(command)
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type="halt",
+        group_scope=str(payload["scope"]) if payload["scope"] != "ALL" else "GLOBAL",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(identity["correlation_id"]),
+        writer_id="kernel-a",
+        payload=payload,
+    )
+
+
+def persist_mode_transition(log: FactLog, transition: dict[str, object], **identity: str) -> None:
+    payload = _mode_transition(transition)
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type="state_transition",
+        group_scope="A",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(identity["correlation_id"]),
+        writer_id="kernel-a",
+        payload=payload,
+    )
+
+
+def persist_check_in(log: FactLog, event: dict[str, object], **identity: str) -> None:
+    payload = _check_in(event)
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type="check_in",
+        group_scope="A",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(identity["correlation_id"]),
+        writer_id="kernel-a",
+        payload=payload,
+    )
+
+
+def persist_halt_state(log: FactLog, observation: dict[str, object], **identity: str) -> None:
+    payload = _halt_state(observation)
+    log.append(
+        event_id=str(identity["event_id"]),
+        event_type="halt",
+        group_scope="A",
+        occurred_at=str(identity["occurred_at"]),
+        recorded_at=str(identity["recorded_at"]),
+        correlation_id=str(identity["correlation_id"]),
+        writer_id="kernel-a",
+        payload=payload,
+    )
+
+
 def persist_credential_use(log: FactLog, audit: dict[str, object], **identity: str) -> None:
     if set(audit) != set(_AUDIT_KEYS):
         raise GateError("credential audit cannot carry a secret", code="secret")
@@ -153,6 +243,56 @@ def persist_credential_use(log: FactLog, audit: dict[str, object], **identity: s
         writer_id="kernel-a",
         payload={key: audit[key] for key in _AUDIT_KEYS},
     )
+
+
+def _kill_command(command: dict[str, object]) -> dict[str, object]:
+    if set(command) != set(_KILL_KEYS) or any(key in _SECRET_KEYS for key in command):
+        raise GateError("kill command cannot carry a secret", code="secret")
+    scope = str(command["scope"])
+    if scope not in {"A", "B", "ALL"}:
+        raise GateError("kill command is incomplete", code="record")
+    level = str(command["kill_level"])
+    if level not in {"K1", "K2", "K3"}:
+        raise GateError("kill command is incomplete", code="record")
+    for key in ("command_id", "channel", "identity", "open_positions"):
+        value = command[key]
+        if not isinstance(value, str):
+            raise GateError("kill command is incomplete", code="record")
+    return {key: command[key] for key in _KILL_KEYS}
+
+
+def _mode_transition(transition: dict[str, object]) -> dict[str, object]:
+    if set(transition) != set(_MODE_KEYS) or any(key in _SECRET_KEYS for key in transition):
+        raise GateError("mode transition is incomplete", code="record")
+    for key in _MODE_KEYS:
+        if not isinstance(transition[key], str) or transition[key] == "":
+            raise GateError("mode transition is incomplete", code="record")
+    return {key: transition[key] for key in _MODE_KEYS}
+
+
+def _check_in(event: dict[str, object]) -> dict[str, object]:
+    if set(event) != set(_CHECKIN_KEYS) or any(key in _SECRET_KEYS for key in event):
+        raise GateError("check-in record is incomplete", code="record")
+    channel = str(event["channel"])
+    strength = str(event["strength"])
+    if channel not in {"web_passkey", "telegram_alive"}:
+        raise GateError("check-in record is incomplete", code="record")
+    if strength not in {"strong", "weak"}:
+        raise GateError("check-in record is incomplete", code="record")
+    for key in ("days_without", "away_days"):
+        value = event[key]
+        if not isinstance(value, str):
+            raise GateError("check-in record is incomplete", code="record")
+    return {key: event[key] for key in _CHECKIN_KEYS}
+
+
+def _halt_state(observation: dict[str, object]) -> dict[str, object]:
+    if set(observation) != set(_HALT_KEYS):
+        raise GateError("halt state is incomplete", code="record")
+    for key in _HALT_KEYS:
+        if not isinstance(observation[key], str):
+            raise GateError("halt state is incomplete", code="record")
+    return {key: observation[key] for key in _HALT_KEYS}
 
 
 def _reconciliation(observation: dict[str, object]) -> dict[str, object]:
