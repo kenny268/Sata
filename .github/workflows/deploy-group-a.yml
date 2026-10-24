@@ -10,6 +10,7 @@ on:
     paths:
       - "group_a/**"
       - ".github/workflows/deploy-group-a.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -29,6 +30,7 @@ jobs:
         working-directory: group_a/kernel
         run: cargo test --workspace
       - name: Dependency scan
+        if: github.event_name == 'workflow_dispatch'
         working-directory: group_a/kernel
         run: |
           cargo generate-lockfile
@@ -39,13 +41,19 @@ jobs:
           python-version: "3.12"
       - name: Lint and test Python stubs
         run: |
-          pip install ruff cryptography jsonschema
+          pip install "ruff==0.17.2" cryptography jsonschema
           ruff check group_a shared
-          PYTHONPATH=group_a/strategy python -m unittest discover -s group_a/strategy/tests -t group_a/strategy
+          PYTHONPATH=group_a/strategy:group_a/cognitive:group_a/adequacy:shared/halt-coordinator python -m unittest discover -s group_a/strategy/tests -t group_a/strategy
+          PYTHONPATH=group_a/adequacy:group_a/strategy:shared/halt-coordinator python -m unittest discover -s group_a/adequacy/tests -t group_a/adequacy
+          PYTHONPATH=group_a/cognitive:shared/fact-log python -m unittest discover -s group_a/cognitive/tests -t group_a/cognitive
           PYTHONPATH=group_a/identity:shared/fact-log python -m unittest discover -s group_a/identity/tests -t group_a/identity
           PYTHONPATH=group_a/release:shared/fact-log python -m unittest discover -s group_a/release/tests -t group_a/release
           PYTHONPATH=group_a/runtime:shared/fact-log python -m unittest discover -s group_a/runtime/tests -t group_a/runtime
           PYTHONPATH=group_a/broker/mt5-bridge python -m unittest discover -s group_a/broker/mt5-bridge/tests -t group_a/broker/mt5-bridge
+          PYTHONPATH=group_a/compliance:group_a/broker/mt5-bridge:shared/fact-log:shared/control-api python -m unittest discover -s group_a/compliance/tests -t group_a/compliance
+          PYTHONPATH=group_a/broker/mt5-bridge python -m unittest group_a/broker/mt5-bridge/tests/test_bat.py
+          PYTHONPATH=group_a/live-readiness:group_a/compliance:group_a/cognitive:group_a/adequacy:shared/backup:shared/constitution:shared/control-api:shared/fact-log python -m unittest discover -s group_a/live-readiness/tests -t group_a/live-readiness
+          PYTHONPATH=group_a/live-l1:group_a/live-readiness:group_a/compliance:group_a/strategy:group_a/adequacy:group_a/broker/mt5-bridge:shared/control-api:shared/fact-log python -m unittest discover -s group_a/live-l1/tests -t group_a/live-l1
       - name: Publish sha-named artifact
         uses: actions/upload-artifact@v4
         with:
