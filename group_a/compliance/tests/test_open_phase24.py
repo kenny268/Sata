@@ -5,6 +5,7 @@ import unittest
 from sate_control.auth import Session
 from sate_control.router import ControlApi
 from sate_factlog.log import FactLog
+from sate_live_readiness.live_ops_wire import seed_staging_live_readiness
 from sate_mt5_bridge import Bridge, MockTerminal
 
 from sate_compliance.broker_ops_wire import gate_for_arm, seed_staging_verification
@@ -31,11 +32,11 @@ class OpenPhase24Tests(unittest.TestCase):
     def test_router_arm_uses_fact_log_without_staging_flag(self) -> None:
         log = FactLog(
             sqlite3.connect(":memory:"),
-            writers=frozenset({"compliance-a", "control-api"}),
-            readers=frozenset({"compliance-a", "control-api", "test"}),
+            writers=frozenset({"compliance-a", "control-api", "live-readiness-a", "sim-ops-a", "strategy-a"}),
+            readers=frozenset({"compliance-a", "control-api", "live-readiness-a", "sim-ops-a", "test"}),
         )
         at = "2026-10-23T21:00:00Z"
-        seed_staging_verification(log, at=at)
+        seed_staging_live_readiness(log, at=at)
         api = ControlApi(
             log=log,
             session=Session(principal="owner", group_scope="A"),

@@ -53,7 +53,7 @@ def _deliver_arm_otp(log: FactLog, *, otp: str, at: str) -> None:
         from sate_live_l1.telegram_otp import deliver_arm_otp
     except ImportError:
         return
-    deliver_arm_otp(log, otp=otp, at=at)
+    deliver_arm_otp(log, otp=otp, at=at, writer_id="control-api")
 
 
 def _activate_live_l1(log: FactLog, *, at: str, body: dict[str, object]) -> dict[str, object]:

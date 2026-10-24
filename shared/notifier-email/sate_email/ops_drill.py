@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from sate_email.checkin_sim import assert_effect, days_after_away, lapse_effect, risk_increase_allowed
+from sate_email.checkin_sim import (
+    assert_effect,
+    days_after_away,
+    lapse_effect,
+    risk_increase_allowed,
+)
 
 
 @dataclass

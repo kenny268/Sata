@@ -252,7 +252,7 @@ class NotifierBot:
 
     def _command(self, text: str) -> str:
         normalized = " ".join(text.strip().lower().split())
-        if normalized.startswith("/mode") or normalized.startswith("/mask") or normalized.startswith("/why"):
+        if normalized.startswith(("/mode", "/mask", "/why")):
             return normalized.split("@", 1)[0]
         return parse_command(text) or button_to_command(text)
 

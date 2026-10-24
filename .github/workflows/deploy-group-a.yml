@@ -50,9 +50,9 @@ jobs:
           PYTHONPATH=group_a/release:shared/fact-log python -m unittest discover -s group_a/release/tests -t group_a/release
           PYTHONPATH=group_a/runtime:shared/fact-log python -m unittest discover -s group_a/runtime/tests -t group_a/runtime
           PYTHONPATH=group_a/broker/mt5-bridge python -m unittest discover -s group_a/broker/mt5-bridge/tests -t group_a/broker/mt5-bridge
-          PYTHONPATH=group_a/compliance:group_a/broker/mt5-bridge:shared/fact-log:shared/control-api python -m unittest discover -s group_a/compliance/tests -t group_a/compliance
+          PYTHONPATH=group_a/compliance:group_a/live-readiness:group_a/cognitive:group_a/adequacy:group_a/live-l1:group_a/broker/mt5-bridge:shared/fact-log:shared/control-api:shared/halt-coordinator:shared/backup:shared/constitution python -m unittest discover -s group_a/compliance/tests -t group_a/compliance
           PYTHONPATH=group_a/broker/mt5-bridge python -m unittest group_a/broker/mt5-bridge/tests/test_bat.py
-          PYTHONPATH=group_a/live-readiness:group_a/compliance:group_a/cognitive:group_a/adequacy:shared/backup:shared/constitution:shared/control-api:shared/fact-log python -m unittest discover -s group_a/live-readiness/tests -t group_a/live-readiness
+          PYTHONPATH=group_a/live-readiness:group_a/compliance:group_a/cognitive:group_a/adequacy:group_a/live-l1:group_a/strategy:shared/backup:shared/constitution:shared/control-api:shared/fact-log:shared/halt-coordinator python -m unittest discover -s group_a/live-readiness/tests -t group_a/live-readiness
           PYTHONPATH=group_a/live-l1:group_a/live-readiness:group_a/compliance:group_a/cognitive:group_a/strategy:group_a/adequacy:group_a/broker/mt5-bridge:group_a/runtime:shared/backup:shared/constitution:shared/control-api:shared/fact-log:shared/halt-coordinator:shared/rcb:shared/capital python -m unittest discover -s group_a/live-l1/tests -t group_a/live-l1
       - name: Publish sha-named artifact
         uses: actions/upload-artifact@v4

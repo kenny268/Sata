@@ -7,6 +7,8 @@ from decimal import Decimal
 from sate_halt.c1_runbook import KillView, run_c1
 from sate_halt.protocol import HaltState
 from sate_halt.service import Coordinator
+from sate_live_l1.arming_delay import arming_delay_elapsed
+from sate_live_l1.reverse_graduation import live_reentry_allowed, manage_only
 from sate_mt5_bridge.bridge import Bridge
 from sate_mt5_bridge.errors import AdapterError
 from sate_mt5_bridge.terminal import MockTerminal
@@ -16,8 +18,6 @@ from sate_strategy_a.sizing import size_position
 from sate_strategy_a.universe import validate_instrument
 
 from sate_adequacy.ops_drills import run_c9_am_a5_reverse_graduation
-from sate_live_l1.arming_delay import arming_delay_elapsed
-from sate_live_l1.reverse_graduation import live_reentry_allowed, manage_only
 
 _ORDER = ("", "L1", "L2", "L3", "L4")
 _TARGET = {
@@ -187,9 +187,10 @@ def _ts11() -> tuple[bool, str]:
 
 
 def _ts12() -> tuple[bool, str]:
-    from sate_runtime.journal import persist_lifecycle
-    from sate_factlog.log import FactLog
     import sqlite3
+
+    from sate_factlog.log import FactLog
+    from sate_runtime.journal import persist_lifecycle
 
     log = FactLog(sqlite3.connect(":memory:"), writers=frozenset({"kernel-a"}))
     persist_lifecycle(

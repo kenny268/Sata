@@ -7,7 +7,14 @@ from sate_factlog.log import FactLog
 from sate_live_l1.persist import WRITER_ID
 
 
-def deliver_arm_otp(log: FactLog, *, otp: str, at: str, channel: str = "telegram") -> None:
+def deliver_arm_otp(
+    log: FactLog,
+    *,
+    otp: str,
+    at: str,
+    channel: str = "telegram",
+    writer_id: str = WRITER_ID,
+) -> None:
     log.append(
         event_id=f"live-arm-otp-{at}",
         event_type="deployment",
@@ -15,7 +22,7 @@ def deliver_arm_otp(log: FactLog, *, otp: str, at: str, channel: str = "telegram
         occurred_at=at,
         recorded_at=at,
         correlation_id="sim-to-live-c4",
-        writer_id=WRITER_ID,
+        writer_id=writer_id,
         payload={
             "kind": "oi_tg_01_arm_otp",
             "channel": channel,
