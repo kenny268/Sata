@@ -26,23 +26,324 @@ services:
     read_only: true
     restart: "no"
   control-api:
-    image: alpine:3.20
-    command: ["echo", "control-api phase-1 placeholder"]
-    environment: *group-a
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_control.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../../shared/control-api:/app:ro
+      - ../../shared/fact-log:/factlog:ro
     networks: [a-control]
     read_only: true
     restart: "no"
   notifier-bot:
-    image: alpine:3.20
-    command: ["echo", "notifier-bot phase-1 placeholder"]
-    environment: *group-a
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_notifier.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/control:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../../shared/notifier-bot:/app:ro
+      - ../../shared/control-api:/control:ro
+      - ../../shared/fact-log:/factlog:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  email-reminder:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_email.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../../shared/notifier-email:/app:ro
     networks: [a-control]
     read_only: true
     restart: "no"
   monitoring:
-    image: alpine:3.20
-    command: ["echo", "monitoring phase-1 placeholder"]
-    environment: *group-a
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_monitoring.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../../shared/monitoring:/app:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  backup:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_backup.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../../shared/backup:/app:ro
+      - ../../shared/fact-log:/factlog:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  cognitive:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_cognitive.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../cognitive:/app:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  cognitive-shadow-weekly:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_cognitive.weekly_runner"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_SHADOW_WEEK: "2026-W43"
+      SATE_SHADOW_REPORT_DIR: "/tmp/shadow"
+    volumes:
+      - ../cognitive:/app:ro
+    networks: [a-control]
+    read_only: false
+    restart: "no"
+  adequacy:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_adequacy.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/strategy:/halt:/cognitive:/bridge:/runtime
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../adequacy:/app:ro
+      - ../strategy:/strategy:ro
+      - ../cognitive:/cognitive:ro
+      - ../broker/mt5-bridge:/bridge:ro
+      - ../runtime:/runtime:ro
+      - ../../shared/halt-coordinator:/halt:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  compliance:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_compliance.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../compliance:/app:ro
+      - ../../shared/fact-log:/factlog:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  live-readiness:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_live_readiness.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/cognitive:/constitution:/backup:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../live-readiness:/app:ro
+      - ../cognitive:/cognitive:ro
+      - ../../shared/constitution:/constitution:ro
+      - ../../shared/backup:/backup:ro
+      - ../../shared/fact-log:/factlog:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  live-l1:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_live_l1.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../live-l1:/app:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  live-l1-phase26:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_live_l1.phase26_runner"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/strategy:/bridge:/adequacy:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_LIVE_L1_FACTLOG: /data/staging.db
+      SATE_PHASE26_REPORT_DIR: /tmp/sate-phase26
+    volumes:
+      - ../live-l1:/app:ro
+      - ../strategy:/strategy:ro
+      - ../broker/mt5-bridge:/bridge:ro
+      - ../adequacy:/adequacy:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/data:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  live-readiness-phase25:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_live_readiness.phase25_runner"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/cognitive:/constitution:/backup:/adequacy:/compliance:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_LIVE_READINESS_FACTLOG: /data/staging.db
+      SATE_PHASE25_REPORT_DIR: /tmp/sate-phase25
+    volumes:
+      - ../live-readiness:/app:ro
+      - ../cognitive:/cognitive:ro
+      - ../adequacy:/adequacy:ro
+      - ../compliance:/compliance:ro
+      - ../../shared/constitution:/constitution:ro
+      - ../../shared/backup:/backup:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/data:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  compliance-phase24:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_compliance.phase24_runner"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_COMPLIANCE_FACTLOG: /data/staging.db
+      SATE_PHASE24_REPORT_DIR: /tmp/sate-phase24
+    volumes:
+      - ../compliance:/app:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/data:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  sim-ops-phase23:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_adequacy.phase23_bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/strategy
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../adequacy:/app:ro
+      - ../strategy:/strategy:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  strategy-a:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_strategy_a.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/runtime:/factlog:/bridge
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../strategy:/app:ro
+      - ../runtime:/runtime:ro
+      - ../../shared/fact-log:/factlog:ro
+      - ../broker/mt5-bridge:/bridge:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  strategy-demo-marathon:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_strategy_a.demo_marathon"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/runtime:/factlog:/bridge
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../strategy:/app:ro
+      - ../runtime:/runtime:ro
+      - ../../shared/fact-log:/factlog:ro
+      - ../broker/mt5-bridge:/bridge:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+  strategy-sim-runner:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_strategy_a.sim_runner"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/adequacy:/runtime:/factlog:/bridge
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_STRATEGY_NOW: "2026-10-23T21:00:00Z"
+      SATE_SIM_PERIOD_START: "2026-04-23T00:00:00Z"
+      SATE_SIM_OPS_FACTLOG: /data/sim-ops.db
+    volumes:
+      - ../strategy:/app:ro
+      - ../adequacy:/adequacy:ro
+      - ../runtime:/runtime:ro
+      - ../../shared/fact-log:/factlog:ro
+      - ../broker/mt5-bridge:/bridge:ro
+      - sim-ops-data:/data
+    networks: [a-control]
+    read_only: false
+    restart: "no"
+  sim-ops-daily:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_adequacy.sim_ops_daily"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/strategy
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_SIM_OPS_AT: "2026-10-23T21:00:00Z"
+      SATE_SIM_OPS_FACTLOG: /data/sim-ops.db
+      SATE_PHASE23_RUN_DRILLS: "1"
+    volumes:
+      - ../adequacy:/app:ro
+      - sim-ops-data:/data
+    networks: [a-control]
+    read_only: false
+    restart: "no"
+  backup-runner:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_backup.runner"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app:/factlog
+      PYTHONDONTWRITEBYTECODE: "1"
+      SATE_FACTLOG_DB: /factlog-data/staging.db
+      SATE_BACKUP_DIR: /backups
+    volumes:
+      - ../../shared/backup:/app:ro
+      - ../../shared/fact-log:/factlog:ro
+      - factlog-data:/factlog-data:ro
+      - backup-data:/backups
+    depends_on:
+      - fact-log
     networks: [a-control]
     read_only: true
     restart: "no"
@@ -153,6 +454,20 @@ services:
     read_only: true
     restart: "no"
 
+  halt-coordinator:
+    image: python:3.12-alpine
+    working_dir: /app
+    command: ["python", "-m", "sate_halt.bootstrap"]
+    environment:
+      <<: *group-a
+      PYTHONPATH: /app
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ../../shared/halt-coordinator:/app:ro
+    networks: [a-control]
+    read_only: true
+    restart: "no"
+
   release:
     build:
       context: ../release
@@ -197,3 +512,7 @@ volumes:
     name: sate-a-constitution
   release-data:
     name: sate-a-release
+  sim-ops-data:
+    name: sate-a-sim-ops
+  backup-data:
+    name: sate-a-backup
