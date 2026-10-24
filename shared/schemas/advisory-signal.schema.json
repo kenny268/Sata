@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sate.local/schemas/advisory-signal.schema.json",
+  "title": "AdvisorySignal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "signal_id",
+    "cycle_id",
+    "instrument",
+    "horizon",
+    "state",
+    "q",
+    "c",
+    "evidence_refs",
+    "valid_from",
+    "valid_until",
+    "model_id",
+    "prompt_hash",
+    "calibration_version",
+    "signature"
+  ],
+  "properties": {
+    "signal_id": { "type": "string", "minLength": 1 },
+    "cycle_id": { "type": "string", "minLength": 1 },
+    "instrument": { "type": "string", "minLength": 1 },
+    "horizon": { "type": "string", "minLength": 1 },
+    "state": { "enum": ["ACTIVE", "ABSTAIN"] },
+    "q": { "type": "number" },
+    "c": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "valid_from": { "type": "string", "minLength": 1 },
+    "valid_until": { "type": "string", "minLength": 1 },
+    "model_id": { "type": "string", "minLength": 1 },
+    "prompt_hash": { "type": "string", "minLength": 1 },
+    "calibration_version": { "type": "string", "minLength": 1 },
+    "abstain_reason": { "type": ["string", "null"] },
+    "signature": { "type": "string", "minLength": 1 }
+  }
+}

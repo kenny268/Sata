@@ -1,0 +1,57 @@
+{
+  "phase": 21,
+  "exit_criteria": {
+    "advisory_signal_schema": true,
+    "a_cog_01_invalid_zero_view": true,
+    "a_cog_02_calibration_cap": true,
+    "a_cog_03_injection_safe": true,
+    "a_cog_04_shadow_weekly_export": true,
+    "live_advisory_multiplier_zero": true,
+    "cg_live_threshold_not_invented": true,
+    "sec_no_order_path_imports": true,
+    "ts_02_ts_03_mod_scenarios": true,
+    "strategy_cognitive_wire": true,
+    "compose_cognitive_smoke": true,
+    "sim_loop_shadow_accumulator": true,
+    "demo_marathon_shadow_feed": true,
+    "shadow_factlog_persist": true,
+    "weekly_runner_loads_state_file": true,
+    "a_cog_04_rank_corr_and_pnl_stub": true
+  },
+  "requirements": ["A-COG-01", "A-COG-02", "A-COG-03", "A-COG-04"],
+  "backlog_complete": ["A-COG-01", "A-COG-02", "A-COG-03", "A-COG-04"],
+  "not_this_phase": [
+    "CG-LIVE threshold numeric gate",
+    "cognitive network publisher",
+    "validator conflict/stale/budget full matrix",
+    "telegram abstain templates",
+    "12-month prompt retention"
+  ],
+  "evidence": [
+    "shared/schemas/advisory-signal.schema.json",
+    "group_a/cognitive/sate_cognitive/signing.py",
+    "group_a/cognitive/sate_cognitive/validator.py",
+    "group_a/cognitive/sate_cognitive/calibration.py",
+    "group_a/cognitive/sate_cognitive/injection.py",
+    "group_a/cognitive/sate_cognitive/ingest.py",
+    "group_a/cognitive/sate_cognitive/gate.py",
+    "group_a/cognitive/sate_cognitive/shadow.py",
+    "group_a/cognitive/sate_cognitive/shadow_log.py",
+    "group_a/cognitive/sate_cognitive/shadow_store.py",
+    "group_a/cognitive/sate_cognitive/fixtures.py",
+    "group_a/cognitive/sate_cognitive/weekly_runner.py",
+    "group_a/cognitive/sate_cognitive/bootstrap.py",
+    "group_a/strategy/sate_strategy_a/cognitive_wire.py",
+    "group_a/strategy/sate_strategy_a/sim_cognitive.py",
+    "group_a/strategy/sate_strategy_a/marathon_shadow.py",
+    "group_a/cognitive/tests/test_cognitive.py",
+    "group_a/cognitive/tests/test_security_boundary.py",
+    "group_a/cognitive/tests/test_shadow_log.py",
+    "group_a/strategy/tests/test_cognitive_wire.py",
+    "group_a/strategy/tests/test_sim_shadow.py",
+    "group_a/strategy/tests/test_open_phase21.py"
+  ],
+  "methodology": {
+    "a_cog_04": "SIM marathon feeds signed signals into shadow accumulator; weekly export includes Pearson rank correlation vs session return sign, mean shadow c, and pnl_delta_vs_zero_baseline=0 while advisory multiplier is 0. CG-LIVE pass/fail threshold remains undefined."
+  }
+}
