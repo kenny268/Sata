@@ -1,7 +1,7 @@
 [project]
 name = "sate-control"
-version = "0.1.0"
-description = "Phase 1 scope gate for the SATE control API"
+version = "0.17.0"
+description = "Authenticated group-scoped control-api for the owner web SPA"
 requires-python = ">=3.11"
 
 [tool.setuptools.packages.find]

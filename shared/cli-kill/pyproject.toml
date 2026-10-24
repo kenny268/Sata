@@ -1,0 +1,5 @@
+[project]
+name = "sate-cli-kill"
+version = "0.15.0"
+description = "Signed CLI kill channel stub"
+requires-python = ">=3.11"

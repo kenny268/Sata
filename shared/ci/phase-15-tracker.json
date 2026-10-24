@@ -1,0 +1,27 @@
+{
+  "phase": 15,
+  "exit_criteria": {
+    "kill_k1_k2_k3_sim_drill": true,
+    "mode_transitions_auditable": true,
+    "halt_ladder_l1_l4": true,
+    "global_halt_inv06": true,
+    "runbook_c1_executable": false
+  },
+  "requirements": ["A-KIL-01", "A-KIL-02", "A-KIL-03", "A-KIL-04", "A-KIL-05", "A-KIL-06", "A-MOD-04"],
+  "backlog_complete": ["A-P0-14", "A-P0-15"],
+  "not_this_phase": ["A-CHK-01", "A-P0-16"],
+  "evidence": [
+    "group_a/kernel/verdict/src/ladder.rs",
+    "group_a/kernel/verdict/src/kill.rs",
+    "group_a/kernel/verdict/src/mode.rs",
+    "group_a/kernel/verdict/src/halt_ladder_tests.rs",
+    "shared/halt-coordinator/sate_halt/service.py",
+    "shared/halt-coordinator/sate_halt/protocol.py",
+    "shared/halt-coordinator/sate_halt/drill.py",
+    "shared/control-api/sate_control/kill.py",
+    "shared/control-api/sate_control/mode_badge.py",
+    "shared/cli-kill/sate_cli_kill/sign.py",
+    "group_a/runtime/sate_runtime/journal.py",
+    "shared/ci/tests/test_phase15_tracker.py"
+  ]
+}

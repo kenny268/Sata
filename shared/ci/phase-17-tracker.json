@@ -1,0 +1,35 @@
+{
+  "phase": 17,
+  "exit_criteria": {
+    "group_scoped_auth": true,
+    "spa_owner_pages": true,
+    "passkey_risk_increasing": true,
+    "inv03_reporting_label": true,
+    "sim_ops_without_telegram": true,
+    "control_actions_in_fact_log": true,
+    "http_control_boundary": true,
+    "csrf_on_control_posts": true,
+    "webauthn_assertion_validated": true,
+    "capital_ratify_wired": true,
+    "live_final_gate": false
+  },
+  "requirements": ["A-P0-16", "A-IND-02", "A-MOD-04", "A-PR-05", "A-TG-01", "A-TG-02", "A-TG-03"],
+  "backlog_complete": ["A-P0-16"],
+  "not_this_phase": [],
+  "evidence": [
+    "shared/control-api/sate_control/router.py",
+    "shared/control-api/sate_control/auth.py",
+    "shared/control-api/sate_control/preflight.py",
+    "shared/control-api/sate_control/audit.py",
+    "shared/web/src/App.tsx",
+    "shared/web/src/pages/Controls.tsx",
+    "shared/ci/tests/test_phase17_tracker.py",
+    "shared/control-api/tests/test_router.py",
+    "shared/control-api/tests/test_iso_scope.py",
+    "shared/control-api/sate_control/http_server.py",
+    "shared/control-api/sate_control/security.py",
+    "shared/control-api/tests/test_http.py",
+    "shared/control-api/tests/test_passkey.py",
+    "shared/web/src/api/client.ts"
+  ]
+}

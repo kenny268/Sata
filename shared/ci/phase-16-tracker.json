@@ -1,0 +1,32 @@
+{
+  "phase": 16,
+  "exit_criteria": {
+    "checkin_timer_in_kernel": true,
+    "day10_day14_sim_tested": true,
+    "web_passkey_checkin": true,
+    "telegram_alive_reduce_only": true,
+    "email_reminder_path_tested": true,
+    "trusted_contact_informational_only": true,
+    "appendix_d_smtp_production": true,
+    "runbook_c6_executable": true,
+    "ops_op01_op06_sim": true
+  },
+  "requirements": ["A-CHK-01", "A-CHK-02", "A-CHK-03", "A-CHK-04", "A-CHK-05"],
+  "backlog_complete": ["A-CHK-01", "A-CHK-02", "A-CHK-03", "A-CHK-04", "A-CHK-05"],
+  "not_this_phase": [],
+  "evidence": [
+    "group_a/kernel/verdict/src/checkin.rs",
+    "group_a/kernel/verdict/src/checkin_ladder_tests.rs",
+    "shared/control-api/sate_control/checkin.py",
+    "shared/control-api/sate_control/trusted_contact.py",
+    "shared/notifier-email/sate_email/provider.py",
+    "shared/notifier-email/sate_email/ops_drill.py",
+    "shared/notifier-email/sate_email/c6_runbook.py",
+    "shared/notifier-email/sate_email/appendix_d.py",
+    "shared/control-api/sate_control/checkin_service.py",
+    "shared/notifier-bot/sate_notifier/reminder.py",
+    "shared/notifier-bot/sate_notifier/alive.py",
+    "group_a/runtime/sate_runtime/journal.py",
+    "shared/ci/tests/test_phase16_tracker.py"
+  ]
+}
