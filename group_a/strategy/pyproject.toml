@@ -1,8 +1,13 @@
 [project]
 name = "sate-strategy-a"
-version = "0.1.0"
-description = "Group A strategy stub. Emits intent-shaped data only. No broker credentials."
+version = "0.20.0"
+description = "Group A strategy engine: signals, sizing, SIM loop. No broker credentials."
 requires-python = ">=3.11"
+dependencies = ["jsonschema>=4.0.0"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
 
 [tool.setuptools.packages.find]
 where = ["."]
