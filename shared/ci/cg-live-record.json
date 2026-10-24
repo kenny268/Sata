@@ -1,0 +1,8 @@
+{
+  "gate": "CG-LIVE",
+  "requirement": "A-COG-04",
+  "initial_live_path": "advisory_zero",
+  "threshold_defined": false,
+  "pass_criteria": "trading_advisory_multiplier remains 0 until owner defines CG-LIVE threshold; documented in sate_cognitive.gate",
+  "fail_criteria": "Non-zero advisory multiplier without defined threshold blocks LIVE preflight"
+}

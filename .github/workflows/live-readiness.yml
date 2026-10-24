@@ -1,0 +1,29 @@
+name: live-readiness
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase25-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: §16.1 matrix evidence + Phase 25 preflight tests
+        run: |
+          PYTHONPATH=group_a/live-readiness:group_a/compliance:group_a/cognitive:group_a/adequacy:shared/backup:shared/constitution:shared/control-api:shared/fact-log \
+            python -m unittest \
+              group_a/live-readiness/tests/test_live_readiness.py \
+              group_a/live-readiness/tests/test_open_phase25.py \
+              shared/ci/tests/test_phase25_tracker.py
+          PYTHONPATH=group_a/live-readiness:shared/control-api:shared/fact-log \
+            python -m unittest group_a/live-readiness/tests/test_preflight_wire.py
+          PYTHONPATH=group_a/live-readiness \
+            python -m sate_live_readiness.bootstrap

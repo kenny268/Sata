@@ -1,0 +1,24 @@
+{
+  "phase": 25,
+  "description": "§16.1 verification class → CI evidence modules (existence gate; full suite runs in ci-invariants)",
+  "classes": {
+    "UT": ["shared/control-api/tests/test_preflight.py", "group_a/compliance/tests/test_compliance.py"],
+    "IT": ["shared/control-api/tests/test_router.py", "group_a/adequacy/tests/test_sim_ops_wire.py"],
+    "BAT": ["group_a/broker/mt5-bridge/tests/test_bat.py", "group_a/compliance/tests/test_open_phase24.py"],
+    "REC": ["group_a/runtime/tests/test_journal.py"],
+    "STM": ["shared/control-api/tests/test_router.py"],
+    "INV": ["shared/ci/tests/test_credential_boundary.py", "shared/control-api/tests/test_iso_scope.py"],
+    "SEC": ["shared/notifier-bot/tests/test_negative_auth.py"],
+    "RT": ["group_a/release/tests/test_release.py"],
+    "FI": ["shared/halt-coordinator/tests/test_halt.py"],
+    "DR": ["shared/backup/tests/test_backup.py", "shared/monitoring/tests/test_open_phase19.py"],
+    "DEP": ["group_a/release/tests/test_release.py"],
+    "TRE": ["shared/treasury/tests/test_treasury.py"],
+    "HALT": ["shared/halt-coordinator/tests/test_halt.py"],
+    "ISO": ["shared/control-api/tests/test_iso_scope.py"],
+    "PERF": ["group_a/adequacy/tests/test_perf_dashboard.py"],
+    "MOD": ["group_a/adequacy/tests/test_champion.py"],
+    "OPS": ["group_a/adequacy/tests/test_phase23.py", "shared/monitoring/tests/test_phase19_pending.py"],
+    "TG": ["shared/notifier-bot/tests/test_p1_commands.py"]
+  }
+}
