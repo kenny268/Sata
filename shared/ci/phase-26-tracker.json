@@ -1,0 +1,37 @@
+{
+  "phase": 26,
+  "exit_criteria": {
+    "c4_runbook_executable": true,
+    "arming_delay_24h": true,
+    "oi_tg_01_otp_factlog": true,
+    "web_only_confirm": true,
+    "safe_window_on_activate": true,
+    "ramp_025_started": true,
+    "shadow_twin_started": true,
+    "first_live_session_recon": true,
+    "preflight_not_bypassed": true,
+    "compose_live_l1_smoke": true,
+    "first_production_session_on_broker": false
+  },
+  "requirements": ["A-SWT-01", "A-SWT-03", "A-LAD-04", "A-LAD-06", "AM-01", "AM-A1"],
+  "backlog_complete": ["A-P1-03"],
+  "blockers": [],
+  "not_this_phase": ["first_production_session_on_broker (operator)", "L2/L3 graduation (A-DEC-02)"],
+  "evidence": [
+    "group_a/live-l1/sate_live_l1/arming_delay.py",
+    "group_a/live-l1/sate_live_l1/telegram_otp.py",
+    "group_a/live-l1/sate_live_l1/transition.py",
+    "group_a/live-l1/sate_live_l1/ramp.py",
+    "group_a/live-l1/sate_live_l1/shadow_twin.py",
+    "group_a/live-l1/sate_live_l1/live_session.py",
+    "group_a/live-l1/sate_live_l1/recon.py",
+    "group_a/live-l1/sate_live_l1/c4_runbook.py",
+    "group_a/live-l1/sate_live_l1/phase26_runner.py",
+    "group_a/live-l1/sate_live_l1/bootstrap.py",
+    "shared/control-api/sate_control/arming.py",
+    "shared/control-api/sate_control/router.py",
+    "group_a/live-l1/tests/test_live_l1.py",
+    "group_a/live-l1/tests/test_arming_wire.py",
+    "group_a/live-l1/tests/test_open_phase26.py"
+  ]
+}

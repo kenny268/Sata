@@ -1,0 +1,9 @@
+[project]
+name = "sate-live-l1"
+version = "0.26.0"
+description = "LIVE-L1 arming, ramp, shadow twin, first session (Phase 26)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
