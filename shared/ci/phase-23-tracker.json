@@ -1,0 +1,44 @@
+{
+  "phase": 23,
+  "exit_criteria": {
+    "sim_calendar_clock": true,
+    "sim_ops_evidence_ledger": true,
+    "ops_drills_c3_c6_c9_c10_am_a5": true,
+    "kalman_freeze_clock_a_sim_07": true,
+    "phase23_gate_report": true,
+    "accelerated_six_month_harness": true,
+    "compose_phase23_smoke": true,
+    "sim_runner_ledger_wire": true,
+    "sim_ops_daily_rollup": true,
+    "phase23_report_factlog_persist": true,
+    "session_rollup_from_fact_log": true,
+    "operator_wall_clock_flag": true,
+    "six_month_wall_clock_elapsed": false
+  },
+  "requirements": ["A-SIM-01", "A-SIM-02", "A-SIM-05", "A-SIM-06", "A-SIM-07", "A-SIM-08"],
+  "backlog_complete": ["A-SIM-01", "A-SIM-02", "A-SIM-05", "A-SIM-06", "A-SIM-07", "A-SIM-08"],
+  "blockers": [],
+  "not_this_phase": [
+    "six_month_wall_clock_elapsed (operator attestation in tracker only)",
+    "new feature development beyond evidence gaps"
+  ],
+  "evidence": [
+    "group_a/adequacy/sate_adequacy/sim_clock.py",
+    "group_a/adequacy/sate_adequacy/evidence_ledger.py",
+    "group_a/adequacy/sate_adequacy/sim_ops_wire.py",
+    "group_a/adequacy/sate_adequacy/sim_ops_daily.py",
+    "group_a/adequacy/sate_adequacy/ops_drills.py",
+    "group_a/adequacy/sate_adequacy/kalman_clock.py",
+    "group_a/adequacy/sate_adequacy/phase23_gate.py",
+    "group_a/adequacy/sate_adequacy/phase23_log.py",
+    "group_a/adequacy/sate_adequacy/wall_clock.py",
+    "group_a/adequacy/sate_adequacy/sim_period_harness.py",
+    "group_a/adequacy/sate_adequacy/phase23_runner.py",
+    "group_a/adequacy/sate_adequacy/phase23_bootstrap.py",
+    "group_a/strategy/sate_strategy_a/sim_runner.py",
+    "group_a/adequacy/tests/test_phase23.py",
+    "group_a/adequacy/tests/test_open_phase23.py",
+    "group_a/adequacy/tests/test_sim_ops_wire.py"
+  ],
+  "operator_note": "Run strategy-sim-runner on schedule with shared SATE_SIM_OPS_FACTLOG; sim-ops-daily for rollup/drills; after 6 calendar months set SATE_SIM_WALL_CLOCK_ELAPSED=true and flip six_month_wall_clock_elapsed in this tracker."
+}

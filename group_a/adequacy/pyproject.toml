@@ -1,0 +1,9 @@
+[project]
+name = "sate-adequacy"
+version = "0.22.0"
+description = "Group A SIM-adequacy engine, scenarios, performance dashboards (Phase 22)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
