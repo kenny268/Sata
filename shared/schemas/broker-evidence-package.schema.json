@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sata.local/schemas/broker-evidence-package.schema.json",
+  "title": "BrokerEvidencePackage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "package_id",
+    "broker_id",
+    "jurisdiction",
+    "account_type",
+    "products",
+    "max_leverage",
+    "withdrawal_mechanism",
+    "protective_orders_verified",
+    "verification_date",
+    "known_rules_complete"
+  ],
+  "properties": {
+    "package_id": { "type": "string", "minLength": 1 },
+    "broker_id": { "type": "string", "minLength": 1 },
+    "jurisdiction": { "type": "string", "minLength": 1 },
+    "account_type": { "type": "string", "minLength": 1 },
+    "products": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "max_leverage": { "type": "string", "minLength": 1 },
+    "withdrawal_mechanism": { "type": "string", "minLength": 1 },
+    "protective_orders_verified": { "type": "boolean" },
+    "verification_date": { "type": "string", "minLength": 10 },
+    "known_rules_complete": { "type": "boolean" },
+    "tax_memo_ref": { "type": "string" },
+    "appendix_d_ref": { "type": "string" }
+  }
+}

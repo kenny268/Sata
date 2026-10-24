@@ -1,0 +1,10 @@
+[project]
+name = "sate-compliance"
+version = "0.24.0"
+description = "Broker verification, tax memo, blocker resolution (Phase 24)"
+requires-python = ">=3.11"
+dependencies = ["jsonschema>=4.0.0"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

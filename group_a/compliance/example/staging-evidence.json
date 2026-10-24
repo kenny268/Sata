@@ -1,0 +1,14 @@
+{
+  "package_id": "exness-ke-verified",
+  "broker_id": "exness",
+  "jurisdiction": "KE",
+  "account_type": "standard",
+  "products": ["forex", "cfd"],
+  "max_leverage": "1:200",
+  "withdrawal_mechanism": "manual_portal",
+  "protective_orders_verified": true,
+  "verification_date": "2026-10-01",
+  "known_rules_complete": true,
+  "tax_memo_ref": "tax-memo-ke-2026",
+  "appendix_d_ref": "APP-D-BROKER-01"
+}
